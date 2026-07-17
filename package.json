@@ -1,0 +1,16 @@
+{
+  "name": "dietpal",
+  "version": "0.1.0",
+  "description": "Lebanese-focused AI nutrition and meal-planning PWA",
+  "type": "module",
+  "scripts": {
+    "dev": "netlify dev",
+    "deploy": "netlify deploy --prod"
+  },
+  "dependencies": {
+    "firebase": "^10.12.0"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  }
+}
