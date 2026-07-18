@@ -8,7 +8,7 @@ import {
   signOut, onAuthStateChanged, updateProfile, deleteUser
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
-  getFirestore, doc, setDoc, getDoc, deleteDoc, increment
+  getFirestore, doc, setDoc, getDoc, deleteDoc, increment, collection, getDocs, query, orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -37,6 +37,7 @@ async function trackUsage(type) {
     await setDoc(doc(db, 'appUsage', date), { [type]: increment(1) }, { merge: true });
   } catch (err) { console.error('Usage tracking failed:', err); }
   checkUsageWarning(type);
+  refreshSidebarUsage();
 }
 
 async function checkUsageWarning(type) {
@@ -78,6 +79,16 @@ async function loadGlobalUsage() {
     const snap = await getDoc(doc(db, 'appUsage', todayKey()));
     return snap.exists() ? { plan: snap.data().plan || 0, chat: snap.data().chat || 0 } : { plan: 0, chat: 0 };
   } catch (err) { return { plan: 0, chat: 0 }; }
+}
+
+async function refreshSidebarUsage() {
+  if (!currentUser || !currentUser.uid) return;
+  const personal = await loadUsageForProfile();
+  const global = await loadGlobalUsage();
+  document.getElementById('sideUsagePlan').textContent = personal.plan;
+  document.getElementById('sideUsageChat').textContent = personal.chat;
+  document.getElementById('sideFillPlan').style.width = Math.min(100, Math.round(global.plan / USAGE_LIMITS.plan * 100)) + '%';
+  document.getElementById('sideFillChat').style.width = Math.min(100, Math.round(global.chat / USAGE_LIMITS.chat * 100)) + '%';
 }
 
 
@@ -163,11 +174,7 @@ async function loadUserData(uid) {
       logItems = logSnap.data().items || [];
       renderLog();
     }
-    const chatSnap = await getDoc(doc(db, 'users', uid, 'chatHistory', 'main'));
-    if (chatSnap.exists()) {
-      chatHistory = chatSnap.data().messages || [];
-      renderRestoredChat();
-    }
+    refreshSidebarUsage();
   } catch (err) { console.error('Failed to load user data:', err); }
 }
 
@@ -274,6 +281,15 @@ document.getElementById('editSave').addEventListener('click', async () => {
   document.getElementById('profileCalTarget').textContent = `${dailyTargets.calories} kcal`;
   document.getElementById('profileMacros').textContent = `${dailyTargets.protein}g / ${dailyTargets.carbs}g / ${dailyTargets.fat}g`;
 });
+
+/* ---------- About modal ---------- */
+document.getElementById('aboutBtn').addEventListener('click', () => document.getElementById('aboutModal').classList.add('open'));
+document.getElementById('profileAboutBtn').addEventListener('click', () => {
+  document.getElementById('profileModal').classList.remove('open');
+  document.getElementById('aboutModal').classList.add('open');
+});
+document.getElementById('aboutClose').addEventListener('click', () => document.getElementById('aboutModal').classList.remove('open'));
+document.getElementById('aboutModal').addEventListener('click', (e) => { if (e.target.id === 'aboutModal') e.currentTarget.classList.remove('open'); });
 
 document.getElementById('profileDeleteBtn').addEventListener('click', () => {
   document.getElementById('profileViewMode').classList.add('hidden');
@@ -794,10 +810,20 @@ function checkCache(question) {
   return null;
 }
 let chatHistory = [];
-async function saveChatToFirestore() {
-  if (!currentUser || !currentUser.uid) return;
+let currentConvId = null;
+
+async function ensureConversation(firstMessage) {
+  if (currentConvId || !currentUser || !currentUser.uid) return;
+  currentConvId = 'c' + Date.now();
+  const title = firstMessage.length > 42 ? firstMessage.slice(0, 42) + '…' : firstMessage;
   try {
-    await setDoc(doc(db, 'users', currentUser.uid, 'chatHistory', 'main'), { messages: chatHistory });
+    await setDoc(doc(db, 'users', currentUser.uid, 'conversations', currentConvId), { title, messages: [], updatedAt: Date.now() });
+  } catch (err) { console.error('Failed to start conversation:', err); }
+}
+async function saveChatToFirestore() {
+  if (!currentUser || !currentUser.uid || !currentConvId) return;
+  try {
+    await setDoc(doc(db, 'users', currentUser.uid, 'conversations', currentConvId), { messages: chatHistory, updatedAt: Date.now() }, { merge: true });
   } catch (err) { console.error('Failed to save chat history:', err); }
 }
 function renderRestoredChat() {
@@ -805,6 +831,85 @@ function renderRestoredChat() {
   win.innerHTML = '<div class="bubble bot">Ahla! Ask me about any Lebanese dish, ingredient, or how to cook something step by step.</div>';
   chatHistory.forEach(m => addBubble(m.content, m.role === 'user' ? 'user' : 'bot'));
 }
+function startNewChat() {
+  currentConvId = null;
+  chatHistory = [];
+  renderRestoredChat();
+}
+async function openConversation(convId) {
+  if (!currentUser || !currentUser.uid) return;
+  try {
+    const snap = await getDoc(doc(db, 'users', currentUser.uid, 'conversations', convId));
+    if (!snap.exists()) return;
+    currentConvId = convId;
+    chatHistory = snap.data().messages || [];
+    renderRestoredChat();
+    document.getElementById('historyModal').classList.remove('open');
+    switchTab('chat');
+  } catch (err) { console.error('Failed to open conversation:', err); }
+}
+async function loadConversationsList() {
+  const listEl = document.getElementById('convList');
+  if (!currentUser || !currentUser.uid) { listEl.innerHTML = '<div class="meta">Log in to see your conversations.</div>'; return; }
+  listEl.innerHTML = '<div class="meta">Loading…</div>';
+  try {
+    const q = query(collection(db, 'users', currentUser.uid, 'conversations'), orderBy('updatedAt', 'desc'));
+    const snaps = await getDocs(q);
+    if (snaps.empty) { listEl.innerHTML = '<div class="meta">No saved conversations yet.</div>'; return; }
+    listEl.innerHTML = '';
+    snaps.forEach(docSnap => {
+      const data = docSnap.data();
+      const row = document.createElement('div');
+      row.className = 'conv-item';
+      const when = data.updatedAt ? new Date(data.updatedAt).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+      row.innerHTML = `
+        <div class="conv-title-wrap">
+          <div class="conv-title">${data.title || 'Conversation'}</div>
+          <div class="conv-time">${when}</div>
+        </div>
+        <div class="conv-actions">
+          <button class="secondary" data-act="rename">Rename</button>
+          <button class="secondary" data-act="delete">Delete</button>
+        </div>`;
+      row.querySelector('.conv-title-wrap').addEventListener('click', () => openConversation(docSnap.id));
+      row.querySelector('[data-act="rename"]').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const wrap = row.querySelector('.conv-title-wrap');
+        const oldTitle = data.title || '';
+        wrap.innerHTML = `<input class="conv-rename-input" value="${oldTitle.replace(/"/g, '&quot;')}">`;
+        const input = wrap.querySelector('input');
+        input.focus();
+        input.select();
+        const save = async () => {
+          const newTitle = input.value.trim() || oldTitle;
+          await setDoc(doc(db, 'users', currentUser.uid, 'conversations', docSnap.id), { title: newTitle }, { merge: true });
+          loadConversationsList();
+        };
+        input.addEventListener('blur', save);
+        input.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') input.blur(); });
+      });
+      row.querySelector('[data-act="delete"]').addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (!confirm('Delete this conversation? This can\'t be undone.')) return;
+        await deleteDoc(doc(db, 'users', currentUser.uid, 'conversations', docSnap.id));
+        if (currentConvId === docSnap.id) startNewChat();
+        loadConversationsList();
+      });
+      listEl.appendChild(row);
+    });
+  } catch (err) {
+    listEl.innerHTML = '<div class="meta">Couldn\'t load conversations right now.</div>';
+    console.error('Failed to list conversations:', err);
+  }
+}
+document.getElementById('newChatBtn').addEventListener('click', startNewChat);
+document.getElementById('historyBtn').addEventListener('click', () => {
+  document.getElementById('historyModal').classList.add('open');
+  loadConversationsList();
+});
+document.getElementById('historyClose').addEventListener('click', () => document.getElementById('historyModal').classList.remove('open'));
+document.getElementById('historyModal').addEventListener('click', (e) => { if (e.target.id === 'historyModal') e.currentTarget.classList.remove('open'); });
+
 function addBubble(text, who) {
   const win = document.getElementById('chatWindow');
   const div = document.createElement('div');
@@ -834,6 +939,7 @@ async function sendChat() {
   chatTextarea.value = '';
   chatTextarea.style.height = 'auto';
   addBubble(text, 'user');
+  await ensureConversation(text);
 
   const cached = checkCache(text);
   if (cached) {

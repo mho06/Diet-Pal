@@ -149,6 +149,16 @@
       <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
       Track
     </button>
+
+    <div class="sidebar-extra">
+      <div class="sidebar-usage">
+        <div class="su-row"><span>Plans today</span><b id="sideUsagePlan">0</b></div>
+        <div class="mini-track"><div class="mini-fill" id="sideFillPlan" style="background:var(--accent)"></div></div>
+        <div class="su-row" style="margin-top:10px"><span>Chats today</span><b id="sideUsageChat">0</b></div>
+        <div class="mini-track"><div class="mini-fill" id="sideFillChat" style="background:var(--green)"></div></div>
+      </div>
+      <button class="secondary small" id="aboutBtn" style="width:100%;margin-top:12px">About DietPal</button>
+    </div>
   </div>
 
   <div class="content">
@@ -270,7 +280,13 @@
 
     <!-- CHAT TAB -->
     <div class="panel" id="panel-chat">
-      <h3 style="margin-bottom:12px">Ask about food, dishes, or cooking</h3>
+      <div class="chat-toolbar">
+        <h3 style="margin:0">Ask about food, dishes, or cooking</h3>
+        <div style="display:flex;gap:8px">
+          <button class="secondary" id="newChatBtn" type="button">New chat</button>
+          <button class="secondary" id="historyBtn" type="button">History</button>
+        </div>
+      </div>
       <div class="chat-window" id="chatWindow">
         <div class="bubble bot">Ahla! Ask me about any Lebanese dish, ingredient, or how to cook something step by step.</div>
       </div>
@@ -365,6 +381,7 @@
         <button class="secondary" id="profileClose" type="button" style="margin-top:10px">Close</button>
         <button class="ghost" id="profileLogout" type="button" style="display:block;margin:14px auto 0">Log out</button>
         <button class="ghost" id="profileDeleteBtn" type="button" style="display:block;margin:8px auto 0;color:#C43B1F">Delete my account</button>
+        <button class="ghost" id="profileAboutBtn" type="button" style="display:block;margin:8px auto 0">About DietPal</button>
       </div>
 
       <div class="profile-edit" id="profileEditMode">
@@ -415,6 +432,55 @@
     </div>
   </div>
 
+</div>
+
+<!-- CHAT HISTORY MODAL -->
+<div id="historyModal">
+  <div class="history-card">
+    <h3 style="margin-bottom:2px">Your conversations</h3>
+    <div class="meta" style="margin-bottom:10px">Tap to open. Rename or delete anytime.</div>
+    <div id="convList"><div class="meta">No saved conversations yet.</div></div>
+    <button class="secondary" id="historyClose" type="button" style="margin-top:14px">Close</button>
+  </div>
+</div>
+
+<!-- ABOUT MODAL -->
+<div id="aboutModal">
+  <div class="profile-card" style="text-align:left;max-width:420px">
+    <h3 style="margin-bottom:2px">About DietPal</h3>
+    <div class="meta" style="margin-bottom:16px">Everything worth knowing before you dive in.</div>
+
+    <div class="about-block">
+      <b>What this is</b>
+      <p>DietPal is an AI-assisted nutrition and meal-planning app built around Lebanese and Levantine food — somewhere a generic Western nutrition app usually falls short.</p>
+    </div>
+    <div class="about-block">
+      <b>Plan</b>
+      <p>Get a full day of meals generated for your goal (cut, maintain, or bulk), or build your own plan by hand. Mark any AI-planned meal as eaten to log it instantly.</p>
+    </div>
+    <div class="about-block">
+      <b>Ask</b>
+      <p>A chatbot scoped to food, nutrition, and cooking — ask what a dish is, or get a full step-by-step recipe. Conversations save automatically so you can return to them later.</p>
+    </div>
+    <div class="about-block">
+      <b>Scan &amp; Track</b>
+      <p>Scan a barcode or add an item manually, and see your daily calories and macros tracked against your personal target.</p>
+    </div>
+    <div class="about-block">
+      <b>About the AI</b>
+      <p>Plans and chat replies are AI-generated and can occasionally be wrong — treat this as a helpful guide, not a substitute for a doctor or registered dietitian, especially for allergies or medical conditions.</p>
+    </div>
+    <div class="about-block">
+      <b>Shared usage</b>
+      <p>The AI runs on a shared free-tier key across all users. Heavy use may occasionally slow things down or hit a daily limit — it always resets at midnight UTC.</p>
+    </div>
+    <div class="about-block">
+      <b>Your data</b>
+      <p>Your account, plans, and logs are stored securely via Firebase and tied to your account only.</p>
+    </div>
+
+    <button class="secondary" id="aboutClose" type="button" style="margin-top:8px">Close</button>
+  </div>
 </div>
 
 <script type="module" src="app.js"></script>
