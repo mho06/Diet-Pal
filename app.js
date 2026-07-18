@@ -174,7 +174,6 @@ async function loadUserData(uid) {
       logItems = logSnap.data().items || [];
       renderLog();
     }
-    refreshSidebarUsage();
   } catch (err) { console.error('Failed to load user data:', err); }
 }
 
@@ -192,6 +191,7 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     await loadUserData(user.uid);
     enterApp({ name: user.displayName || user.email.split('@')[0], email: user.email, uid: user.uid });
+    refreshSidebarUsage();
   } else if (!currentUser) {
     document.getElementById('loadingGate').style.display = 'none';
     document.getElementById('authGate').style.display = 'flex';

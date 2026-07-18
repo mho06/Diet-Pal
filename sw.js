@@ -19,6 +19,9 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = event.request.url;
+  // Only handle plain http(s) requests — browser extensions and other schemes
+  // (chrome-extension://, etc.) aren't supported by the Cache API.
+  if (!url.startsWith('http')) return;
   // Never cache API calls (our AI proxy, Open Food Facts, Firebase) — always live.
   if (url.includes('/.netlify/functions/') || url.includes('openfoodfacts.org') || url.includes('googleapis.com') || url.includes('gstatic.com')) {
     return;
