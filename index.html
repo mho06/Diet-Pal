@@ -283,13 +283,9 @@
   }
   @media (min-width: 900px) {
     body { padding-bottom: 40px; display: flex; justify-content: center; }
-    .wrap { max-width: 900px; width: 100%; border: 1px solid var(--line); border-radius: 24px; box-shadow: var(--shadow-lg); margin: 32px auto; display: flex; flex-direction: column; }
-    .topbar { order: 0; border-radius: 24px 24px 0 0; }
-    .tabbar { order: 1; position: static; margin: 0; max-width: none; border-radius: 0; border-left: none; border-right: none; border-top: none; background: var(--card); backdrop-filter: none; box-shadow: none; padding: 4px 20px; }
-    .tab-btn { flex-direction: row; gap: 8px; padding: 14px 10px; font-size: 13.5px; }
-    .tab-btn svg { width: 20px; height: 20px; }
-    .tab-btn.active svg { transform: none; }
-    .panel { order: 2; padding: 28px 32px; min-width: 0; }
+    .wrap { max-width: 900px; width: 100%; border: 1px solid var(--line); border-radius: 24px; box-shadow: var(--shadow-lg); margin: 32px auto; overflow-x: hidden; }
+    .topbar { border-radius: 24px 24px 0 0; }
+    .panel { padding: 28px 32px; min-width: 0; }
     .branch-grid { grid-template-columns: 1fr 1fr; max-width: 480px; }
   }
   @media (min-width: 900px) {
@@ -980,11 +976,24 @@ function applyGoalMacros(goal) {
     document.getElementById('calories').value = cal;
     dailyTargets.calories = cal;
   }
-  const splits = { cut: [0.35, 0.35, 0.30], maintain: [0.30, 0.40, 0.30], bulk: [0.25, 0.50, 0.25] };
-  const [pPct, cPct, fPct] = splits[goal];
-  const proteinG = Math.round(cal * pPct / 4);
-  const carbG = Math.round(cal * cPct / 4);
-  const fatG = Math.round(cal * fPct / 9);
+
+  let proteinG, carbG, fatG;
+  if (userProfile.weightKg) {
+    // Same bodyweight-aware formula as the detailed calculator, so switching goals
+    // here and running the calculator never disagree on the numbers.
+    const proteinPerKg = goal === 'bulk' ? 2.0 : (goal === 'cut' ? 2.2 : 1.8);
+    proteinG = Math.round(userProfile.weightKg * proteinPerKg);
+    const fatCals = cal * 0.28;
+    fatG = Math.round(fatCals / 9);
+    carbG = Math.round(Math.max(cal - proteinG * 4 - fatCals, 0) / 4);
+  } else {
+    // No known bodyweight yet (e.g. before onboarding) — fall back to a simple percentage split.
+    const splits = { cut: [0.35, 0.35, 0.30], maintain: [0.30, 0.40, 0.30], bulk: [0.25, 0.50, 0.25] };
+    const [pPct, cPct, fPct] = splits[goal];
+    proteinG = Math.round(cal * pPct / 4);
+    carbG = Math.round(cal * cPct / 4);
+    fatG = Math.round(cal * fPct / 9);
+  }
   document.getElementById('protein').value = proteinG;
   document.getElementById('carbs').value = carbG;
   document.getElementById('fat').value = fatG;
