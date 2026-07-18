@@ -1,307 +1,19 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
-<meta name="theme-color" content="#14120F">
+<meta name="theme-color" content="#FAF6EE">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="DietPal">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>DietPal</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
-<style>
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  :root {
-    --bg: #14120F;
-    --card: #201C16;
-    --card-soft: #2A251D;
-    --card-hi: #322C22;
-    --accent: #FF6A3D;
-    --accent-dark: #E0501F;
-    --lime: #C7E85C;
-    --gold: #F2B705;
-    --ink: #F5EFE2;
-    --ink-soft: #9C927E;
-    --line: #362F24;
-    --shadow: 0 4px 16px rgba(0,0,0,0.35);
-    --shadow-lg: 0 12px 32px rgba(0,0,0,0.45);
-    --glow: 0 0 0 1px rgba(255,106,61,0.25), 0 8px 24px rgba(255,106,61,0.18);
-    --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  }
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-  }
-  @keyframes panelIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes bubbleIn { from { opacity: 0; transform: translateY(6px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-  @keyframes pulseBar { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.9; } }
-  @keyframes dotBounce { 0%, 80%, 100% { transform: translateY(0); opacity: 0.5; } 40% { transform: translateY(-4px); opacity: 1; } }
-  @keyframes glowPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,106,61,0.35); } 50% { box-shadow: 0 0 0 6px rgba(255,106,61,0); } }
-
-  body { font-family: 'IBM Plex Sans', sans-serif; margin: 0; color: var(--ink); background: var(--bg); padding-bottom: 100px; overflow-x: hidden; }
-  .wrap { max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; }
-
-  /* ---------- Header (static, no motion) ---------- */
-  .topbar {
-    padding: calc(20px + env(safe-area-inset-top, 0px)) 20px 24px; position: relative;
-    background:
-      radial-gradient(90% 140% at 15% -10%, rgba(255,106,61,0.20), transparent 55%),
-      radial-gradient(80% 120% at 100% 0%, rgba(199,232,92,0.12), transparent 55%);
-    border-bottom: 1px solid var(--line);
-  }
-  .topbar-row { display: flex; align-items: center; justify-content: space-between; }
-  .topbar h1 { font-family: 'Zilla Slab', serif; font-weight: 700; font-size: 28px; margin: 0; letter-spacing: -0.3px; }
-  .topbar .sub { font-size: 13.5px; color: var(--ink-soft); margin-top: 4px; }
-  .user-pill { display: flex; align-items: center; gap: 8px; background: var(--card-soft); border: 1px solid var(--line); border-radius: 100px; padding: 6px 14px 6px 6px; font-size: 13px; font-weight: 600; width: auto; color: var(--ink); cursor: pointer; transition: border-color 0.2s ease, transform 0.15s ease; }
-  .user-pill:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: none; }
-  .user-pill:active { transform: scale(0.97); }
-
-  #profileModal { position: fixed; inset: 0; background: rgba(10,9,7,0.7); backdrop-filter: blur(4px); z-index: 40; display: none; align-items: center; justify-content: center; padding: 24px; }
-  #profileModal.open { display: flex; }
-  .profile-card { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 28px 24px; max-width: 340px; width: 100%; text-align: center; box-shadow: var(--shadow-lg); animation: panelIn 0.3s var(--ease) both; }
-  .profile-avatar-lg { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--gold)); display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700; color: #1A1611; margin: 0 auto 14px; }
-  .profile-name { font-family: 'Zilla Slab', serif; font-size: 20px; font-weight: 700; }
-  .profile-email { font-size: 13px; color: var(--ink-soft); margin-bottom: 18px; }
-  .profile-row { display: flex; justify-content: space-between; font-size: 13.5px; padding: 10px 0; border-top: 1px solid var(--line); text-align: left; }
-  .profile-row b { color: var(--lime); }
-  .user-avatar { width: 26px; height: 26px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--gold)); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #1A1611; }
-
-  .panel { padding: 20px; display: none; }
-  .panel.active { display: block; animation: panelIn 0.4s var(--ease) both; }
-
-  .card { background: var(--card); border-radius: 20px; box-shadow: var(--shadow); padding: 18px; margin-bottom: 16px; border: 1px solid var(--line); transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease; overflow: hidden; max-width: 100%; }
-  .card h3 { font-family: 'Zilla Slab', serif; font-size: 17px; font-weight: 600; margin: 0 0 12px; color: var(--ink); display: flex; align-items: center; gap: 8px; }
-  .card h3::before { content: ''; width: 4px; height: 16px; background: var(--accent); border-radius: 2px; display: inline-block; }
-
-  .segmented { display: flex; background: var(--card-soft); border-radius: 14px; padding: 4px; border: 1px solid var(--line); gap: 4px; }
-  .segmented button { flex: 1; width: auto; background: none; border: none; padding: 10px 6px; font-size: 13px; border-radius: 10px; color: var(--ink-soft); font-weight: 600; margin: 0; transition: background-color 0.25s var(--ease), color 0.25s var(--ease), box-shadow 0.25s var(--ease); }
-  .segmented button.active { background: var(--accent); color: #1A1611; box-shadow: 0 4px 12px rgba(255,106,61,0.35); }
-  .segmented button:not(:disabled):hover { transform: none; box-shadow: none; }
-  .panel.active .card { animation: panelIn 0.45s var(--ease) both; }
-  .panel.active .card:nth-of-type(1) { animation-delay: 0.02s; }
-  .panel.active .card:nth-of-type(2) { animation-delay: 0.08s; }
-  .panel.active .card:nth-of-type(3) { animation-delay: 0.14s; }
-
-  .row { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
-  label { display: block; font-size: 13px; margin: 6px 0 4px; color: var(--ink-soft); font-weight: 500; }
-  input, textarea, select {
-    width: 100%; padding: 11px 13px; border: 1px solid var(--line); border-radius: 12px;
-    font-size: 16px; background: var(--card-soft); color: var(--ink); font-family: 'IBM Plex Sans', sans-serif;
-  }
-  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,106,61,0.2); }
-  textarea { min-height: 60px; }
-  ::placeholder { color: #6E6455; }
-
-  button { background: var(--accent); color: #1A1611; border: none; padding: 14px 18px; border-radius: 14px; cursor: pointer; font-size: 15px; font-weight: 700; font-family: 'IBM Plex Sans', sans-serif; width: 100%; transition: transform 0.15s var(--ease), box-shadow 0.2s var(--ease), background-color 0.2s ease; }
-  button.secondary { background: var(--card-soft); color: var(--ink); border: 1px solid var(--line); }
-  button.ghost { background: none; color: var(--lime); text-decoration: underline; font-weight: 600; padding: 4px; width: auto; }
-  button.small { width: auto; padding: 8px 14px; font-size: 13px; border-radius: 10px; }
-  button:disabled { background: #4A4335; color: #8A8070; }
-  button:not(:disabled):hover { box-shadow: var(--glow); transform: translateY(-1px); }
-  button:not(:disabled):active { transform: scale(0.97); box-shadow: none; }
-
-  .meta { font-size: 12px; color: var(--ink-soft); margin-top: 6px; }
-
-  /* ---------- Plan branch choice ---------- */
-  .branch-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
-  .branch-card {
-    background: var(--card); border: 1.5px solid var(--line); border-radius: 20px; padding: 20px 14px;
-    text-align: center; cursor: pointer; transition: all 0.25s var(--ease);
-  }
-  .branch-card .icon-wrap { width: 46px; height: 46px; border-radius: 14px; background: var(--card-soft); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; transition: background 0.25s ease; }
-  .branch-card svg { width: 24px; height: 24px; stroke: var(--ink-soft); fill: none; stroke-width: 1.8; transition: stroke 0.25s ease; }
-  .branch-card .title { font-family: 'Zilla Slab', serif; font-weight: 600; font-size: 15px; margin-bottom: 4px; }
-  .branch-card .desc { font-size: 12px; color: var(--ink-soft); line-height: 1.4; }
-  .branch-card.selected { border-color: var(--accent); background: linear-gradient(180deg, rgba(255,106,61,0.08), transparent); }
-  .branch-card.selected .icon-wrap { background: var(--accent); }
-  .branch-card.selected svg { stroke: #1A1611; }
-
-  /* ---------- Calculator CTA ---------- */
-  .calc-cta {
-    display: flex; align-items: center; gap: 14px; background: linear-gradient(135deg, rgba(255,106,61,0.14), rgba(242,183,5,0.08));
-    border: 1.5px solid rgba(255,106,61,0.35); border-radius: 18px; padding: 14px 16px; cursor: pointer;
-    margin-bottom: 16px; transition: all 0.25s var(--ease);
-  }
-  .calc-cta:hover { border-color: var(--accent); box-shadow: var(--glow); }
-  .calc-cta .icon-wrap { width: 42px; height: 42px; border-radius: 12px; background: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .calc-cta svg { width: 22px; height: 22px; stroke: #1A1611; fill: none; stroke-width: 2; }
-  .calc-cta .text { flex: 1; min-width: 0; }
-  .calc-cta .text .t1 { font-weight: 700; font-size: 14.5px; }
-  .calc-cta .text .t2 { font-size: 12.5px; color: var(--ink-soft); margin-top: 2px; }
-  .calc-cta .chevron { stroke: var(--accent); width: 18px; height: 18px; fill: none; stroke-width: 2; transition: transform 0.3s var(--ease); }
-  .calc-cta.open .chevron { transform: rotate(90deg); }
-
-  .calc-box { background: var(--card-soft); border-left: 3px solid var(--accent); border-radius: 14px; padding: 0 14px; margin-top: 0; max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.4s var(--ease), opacity 0.3s ease, padding 0.4s var(--ease), margin-top 0.4s var(--ease); }
-  .calc-box.open { max-height: 900px; opacity: 1; padding: 14px; margin-top: -6px; margin-bottom: 16px; }
-  .calc-result { font-size: 13.5px; background: #171410; border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-top: 10px; display: none; line-height: 1.6; animation: panelIn 0.3s var(--ease) both; color: var(--ink); }
-  .goal-badge { display: inline-block; font-size: 12px; padding: 5px 11px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); margin-right: 6px; color: var(--ink-soft); transition: background-color 0.2s ease, color 0.2s ease; }
-  .goal-badge.active { background: var(--gold); color: #1A1611; border-color: var(--gold); }
-
-  #output { margin-top: 14px; }
-  .skeleton-line { height: 12px; border-radius: 6px; background: linear-gradient(90deg, var(--line), #443c30, var(--line)); background-size: 200% 100%; margin-bottom: 10px; animation: pulseBar 1.4s ease-in-out infinite; }
-
-  .coach-note { background: linear-gradient(135deg, rgba(199,232,92,0.10), rgba(255,106,61,0.08)); border: 1px solid rgba(199,232,92,0.3); border-radius: 14px; padding: 12px 14px; font-size: 13.5px; line-height: 1.5; margin-bottom: 14px; color: var(--ink); }
-  .cn-tag { display: inline-block; text-transform: uppercase; font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; color: var(--lime); background: rgba(199,232,92,0.12); border-radius: 6px; padding: 2px 7px; margin-right: 8px; vertical-align: middle; }
-
-  /* ---------- Meal result cards ---------- */
-  .meal-card { background: var(--card-soft); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; margin-bottom: 10px; }
-  .meal-card .m-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
-  .meal-card .m-time { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); font-weight: 700; }
-  .meal-card .m-name { font-family: 'Zilla Slab', serif; font-size: 16px; font-weight: 600; margin: 2px 0 6px; }
-  .meal-card .m-desc { font-size: 13px; color: var(--ink-soft); line-height: 1.5; margin-bottom: 10px; }
-  .macro-chips { display: flex; gap: 6px; flex-wrap: wrap; }
-  .macro-chip { font-size: 11.5px; font-weight: 600; padding: 4px 9px; border-radius: 100px; background: var(--card); border: 1px solid var(--line); }
-  .macro-chip.kcal { color: var(--accent); border-color: rgba(255,106,61,0.4); }
-  .macro-chip.p { color: var(--lime); border-color: rgba(199,232,92,0.4); }
-  .macro-chip.c { color: var(--gold); border-color: rgba(242,183,5,0.4); }
-  .macro-chip.f { color: #E89CC9; border-color: rgba(232,156,201,0.4); }
-  .plan-totals { display: flex; justify-content: space-around; text-align: center; background: var(--card); border-radius: 14px; padding: 14px; margin-top: 4px; border: 1px solid var(--line); }
-  .plan-totals .t-num { font-family: 'Zilla Slab', serif; font-size: 20px; font-weight: 700; }
-  .plan-totals .t-lbl { font-size: 11px; color: var(--ink-soft); margin-top: 2px; }
-
-  /* ---------- Manual plan / manual log builder ---------- */
-  .macro-input-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; }
-  .manual-item { background: var(--card-soft); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin-bottom: 8px; }
-  .manual-item .mi-top { display: flex; justify-content: space-between; align-items: center; }
-  .manual-item .mi-name { font-weight: 600; font-size: 14px; }
-  .manual-item .mi-actions { display: flex; gap: 6px; }
-  .manual-item .mi-actions button { width: auto; padding: 5px 10px; font-size: 12px; }
-  .edit-form { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
-  .edit-form.open { display: block; }
-
-  /* ---------- Chat (roomier) ---------- */
-  .chat-window { display: flex; flex-direction: column; gap: 12px; min-height: 240px; max-height: 55vh; overflow-y: auto; padding: 6px 4px 10px; scroll-behavior: smooth; }
-  .bubble { max-width: 88%; padding: 13px 16px; border-radius: 18px; font-size: 15px; line-height: 1.6; white-space: pre-wrap; animation: bubbleIn 0.3s var(--ease) both; }
-  .bubble.user { align-self: flex-end; background: var(--accent); color: #1A1611; border-bottom-right-radius: 4px; font-weight: 500; }
-  .bubble.bot { align-self: flex-start; background: var(--card-soft); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
-  .chat-input-row { display: flex; gap: 8px; margin-top: 12px; align-items: flex-end; }
-  .chat-input-row textarea { flex: 1; resize: none; min-height: 48px; max-height: 120px; }
-  .chat-input-row button { width: auto; padding: 13px 20px; }
-  .typing-dots { display: inline-flex; gap: 4px; padding: 4px 0; }
-  .typing-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--lime); animation: dotBounce 1.2s infinite ease-in-out; }
-  .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
-  .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
-
-  /* ---------- Scanner ---------- */
-  #reader { width: 100%; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); }
-  .product-card { display: flex; gap: 12px; align-items: center; }
-  .product-card img { width: 56px; height: 56px; border-radius: 12px; object-fit: cover; background: var(--card-soft); }
-  .product-info { flex: 1; }
-  .product-info .name { font-weight: 600; font-size: 14px; color: var(--ink); }
-  .product-info .cals { font-size: 13px; color: var(--lime); font-weight: 600; }
-
-  /* ---------- Log summary ---------- */
-  .summary-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr; gap: 10px; margin-top: 6px; }
-  .summary-cell { text-align: center; }
-  .summary-cell .s-num { font-family: 'Zilla Slab', serif; font-weight: 700; font-size: 22px; }
-  .summary-cell.kcal .s-num { color: var(--accent); font-size: 30px; }
-  .summary-cell.p .s-num { color: var(--lime); }
-  .summary-cell.c .s-num { color: var(--gold); }
-  .summary-cell.f .s-num { color: #E89CC9; }
-  .summary-cell .s-lbl { font-size: 11px; color: var(--ink-soft); margin-top: 2px; }
-  .mini-track { height: 5px; background: var(--card-soft); border-radius: 4px; overflow: hidden; margin-top: 6px; }
-  .mini-fill { height: 100%; border-radius: 4px; transition: width 0.6s var(--ease); }
-
-  .log-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); }
-  .log-item:last-child { border-bottom: none; }
-  .log-item .n { font-size: 14px; font-weight: 500; color: var(--ink); }
-  .log-item .macros-inline { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
-  .log-item .macros-inline b { color: var(--lime); }
-
-  /* ---------- Tab bar ---------- */
-  .tabbar {
-    position: fixed; bottom: 12px; left: 12px; right: 12px; background: rgba(32,28,22,0.92); backdrop-filter: blur(14px);
-    border: 1px solid var(--line); border-radius: 20px; display: flex; padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
-    box-shadow: var(--shadow-lg); z-index: 10; max-width: 456px; margin: 0 auto;
-  }
-  .tab-btn {
-    flex: 1; background: none; border: none; padding: 8px 2px; font-size: 11px; color: var(--ink-soft);
-    display: flex; flex-direction: column; align-items: center; gap: 4px; font-weight: 600;
-    transition: color 0.25s ease; border-radius: 14px;
-  }
-  .tab-btn svg { width: 22px; height: 22px; stroke: var(--ink-soft); fill: none; stroke-width: 1.8; transition: stroke 0.25s ease, transform 0.25s var(--ease); }
-  .tab-btn.active { color: var(--accent); background: rgba(255,106,61,0.12); }
-  .tab-btn.active svg { stroke: var(--accent); transform: translateY(-2px) scale(1.08); }
-  .tab-btn:not(:disabled):hover { transform: none; box-shadow: none; }
-
-  .app-hidden { display: none; }
-
-  #loadingGate { position: fixed; inset: 0; background: var(--bg); z-index: 60; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
-  #loadingGate .loading-mark { width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, var(--accent), var(--gold)); display: flex; align-items: center; justify-content: center; }
-  #loadingGate .loading-mark svg { width: 26px; height: 26px; stroke: #1A1611; fill: none; stroke-width: 2; }
-
-  /* ---------- Auth gate ---------- */
-  #authGate {
-    position: fixed; inset: 0; background: var(--bg); z-index: 50; display: none;
-    flex-direction: column; justify-content: flex-start; align-items: center;
-    padding: calc(24px + env(safe-area-inset-top, 0px)) 20px calc(24px + env(safe-area-inset-bottom, 0px));
-    overflow-y: auto; -webkit-overflow-scrolling: touch;
-  }
-  #authGate .wrap { margin: auto 0; }
-  #authGate .auth-hero { text-align: center; margin-bottom: 28px; }
-  #authGate .auth-mark { width: 64px; height: 64px; border-radius: 18px; background: linear-gradient(135deg, var(--accent), var(--gold)); margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; }
-  #authGate .auth-mark svg { width: 30px; height: 30px; stroke: #1A1611; fill: none; stroke-width: 2; }
-  #authGate h1 { font-family: 'Zilla Slab', serif; font-size: 26px; margin: 0 0 6px; text-align: center; }
-  #authGate .auth-sub { text-align: center; color: var(--ink-soft); font-size: 13.5px; margin-bottom: 4px; }
-  .auth-toggle { display: flex; background: var(--card-soft); border-radius: 14px; padding: 4px; margin-bottom: 18px; border: 1px solid var(--line); }
-  .auth-toggle button { flex: 1; background: none; color: var(--ink-soft); font-weight: 600; padding: 10px; border-radius: 10px; }
-  .auth-toggle button.active { background: var(--accent); color: #1A1611; }
-  .auth-form-block { display: none; }
-  .auth-form-block.active { display: block; animation: panelIn 0.3s var(--ease) both; }
-  .auth-error { color: var(--accent); font-size: 12.5px; margin-top: 8px; min-height: 16px; }
-  .password-field { position: relative; }
-  .password-field input { padding-right: 46px; }
-  .eye-toggle {
-    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
-    width: 32px; height: 32px; background: transparent !important; border: none; border-radius: 8px;
-    padding: 0; display: flex; align-items: center; justify-content: center; box-shadow: none;
-  }
-  .eye-toggle svg { width: 19px; height: 19px; stroke: var(--ink-soft); fill: none; stroke-width: 1.8; }
-  .eye-toggle:hover, .eye-toggle:active { background: transparent !important; box-shadow: none; transform: translateY(-50%); }
-
-  /* ---------- Onboarding wizard ---------- */
-  #onboardGate {
-    position: fixed; inset: 0; background: var(--bg); z-index: 55; display: none;
-    flex-direction: column; justify-content: flex-start; align-items: center;
-    padding: calc(28px + env(safe-area-inset-top, 0px)) 20px calc(24px + env(safe-area-inset-bottom, 0px));
-    overflow-y: auto; -webkit-overflow-scrolling: touch;
-  }
-  #onboardGate.open { display: flex; }
-  #onboardGate .wrap { margin: auto 0; }
-  .onboard-progress { display: flex; justify-content: center; gap: 8px; margin-bottom: 26px; flex-shrink: 0; }
-  .onboard-progress .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); transition: background 0.25s ease, transform 0.25s ease; }
-  .onboard-progress .dot.active { background: var(--accent); transform: scale(1.3); }
-  .onboard-step { display: none; }
-  .onboard-step.active { display: block; animation: panelIn 0.3s var(--ease) both; }
-  .onboard-step h2 { font-family: 'Zilla Slab', serif; font-size: 22px; margin: 0 0 6px; }
-
-  /* ---------- Desktop responsive layout ---------- */
-  @media (min-width: 520px) and (max-width: 899px) {
-    .wrap { border-left: 1px solid var(--line); border-right: 1px solid var(--line); box-shadow: var(--shadow-lg); }
-  }
-  @media (min-width: 900px) {
-    body { padding-bottom: 40px; display: flex; justify-content: center; }
-    .wrap { max-width: 900px; width: 100%; border: 1px solid var(--line); border-radius: 24px; box-shadow: var(--shadow-lg); margin: 32px auto; overflow-x: hidden; }
-    .topbar { border-radius: 24px 24px 0 0; }
-    .panel { padding: 28px 32px; min-width: 0; }
-    .branch-grid { grid-template-columns: 1fr 1fr; max-width: 480px; }
-  }
-  @media (min-width: 900px) {
-    #authGate .wrap, #onboardGate .wrap { max-width: 420px; }
-  }
-
-  @media (max-width: 360px) {
-    .macro-input-grid { grid-template-columns: 1fr 1fr; gap: 8px 10px; }
-    .summary-grid { grid-template-columns: 1fr 1fr; gap: 14px 10px; }
-    .summary-cell.kcal { grid-column: 1 / -1; }
-    .branch-grid { grid-template-columns: 1fr; }
-  }
-</style>
-
-
-<!-- ================= LOADING GATE (prevents flash of content before auth resolves) ================= -->
+<!-- ================= LOADING GATE ================= -->
 <div id="loadingGate">
   <div class="loading-mark"><svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 1 5 5c0 3-2 5-5 9-3-4-5-6-5-9a5 5 0 0 1 5-5z"/><circle cx="12" cy="7" r="2"/></svg></div>
   <div class="typing-dots"><span></span><span></span><span></span></div>
@@ -309,7 +21,7 @@
 
 <!-- ================= AUTH GATE ================= -->
 <div id="authGate">
-  <div class="wrap" style="border:none;box-shadow:none;">
+  <div class="gate-inner">
     <div class="auth-hero">
       <div class="auth-mark"><svg viewBox="0 0 24 24"><path d="M12 2a5 5 0 0 1 5 5c0 3-2 5-5 9-3-4-5-6-5-9a5 5 0 0 1 5-5z"/><circle cx="12" cy="7" r="2"/></svg></div>
       <h1>DietPal</h1>
@@ -332,7 +44,7 @@
       </div>
       <div class="auth-error" id="loginError"></div>
       <button id="loginBtn" type="button" style="margin-top:16px">Log in</button>
-      <div class="meta" style="text-align:center;margin-top:10px">Prototype accounts — stored in this session only, not securely saved yet.</div>
+      <div class="meta" style="text-align:center;margin-top:10px">Real accounts via Firebase — your data persists across devices.</div>
     </div>
 
     <div class="auth-form-block" id="signupForm">
@@ -350,13 +62,12 @@
       <div class="auth-error" id="signupError"></div>
       <button id="signupBtn" type="button" style="margin-top:16px">Create account</button>
     </div>
-
   </div>
 </div>
 
 <!-- ================= ONBOARDING WIZARD ================= -->
 <div id="onboardGate">
-  <div class="wrap" style="border:none;box-shadow:none;">
+  <div class="gate-inner">
     <div class="onboard-progress"><span class="dot active" data-step="1"></span><span class="dot" data-step="2"></span><span class="dot" data-step="3"></span></div>
 
     <div class="onboard-step active" id="obStep1">
@@ -407,218 +118,18 @@
   </div>
 </div>
 
-
 <!-- ================= APP ================= -->
-<div class="wrap app-hidden" id="appRoot">
+<div class="app app-hidden" id="appRoot">
   <div class="topbar">
     <div class="topbar-row">
       <div>
-        <h1>DietPal</h1>
+        <h1 class="brand">DietPal</h1>
         <div class="sub">Plan, ask, scan, and track — built for local food.</div>
       </div>
       <button type="button" class="user-pill" id="userPill">
         <div class="user-avatar" id="userAvatar">G</div>
         <span id="userNameLabel">Guest</span>
       </button>
-    </div>
-  </div>
-
-  <div id="profileModal">
-    <div class="profile-card">
-      <div class="profile-avatar-lg" id="profileAvatarLg">G</div>
-      <div class="profile-name" id="profileName">Guest</div>
-      <div class="profile-email" id="profileEmail">Not signed in with an account</div>
-      <div class="profile-row"><span>Daily calorie target</span><b id="profileCalTarget">2000 kcal</b></div>
-      <div class="profile-row"><span>Protein / Carbs / Fat</span><b id="profileMacros">120g / 220g / 65g</b></div>
-      <button class="secondary" id="profileClose" type="button" style="margin-top:16px">Close</button>
-      <button class="ghost" id="profileLogout" type="button" style="display:block;margin:12px auto 0">Log out</button>
-    </div>
-  </div>
-
-  <!-- PLAN TAB -->
-  <div class="panel active" id="panel-plan">
-    <div class="branch-grid">
-      <div class="branch-card selected" id="branchAI">
-        <div class="icon-wrap"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg></div>
-        <div class="title">AI plans it</div>
-        <div class="desc">Give a target, get a full day of meals</div>
-      </div>
-      <div class="branch-card" id="branchManual">
-        <div class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div>
-        <div class="title">I'll build it</div>
-        <div class="desc">Add your own meals by hand</div>
-      </div>
-    </div>
-
-    <!-- AI branch -->
-    <div id="aiPlanView">
-      <div class="card">
-        <h3>Your goal</h3>
-        <div class="segmented" id="goalSelect">
-          <button type="button" data-goal="cut">Cut</button>
-          <button type="button" data-goal="maintain" class="active">Maintain</button>
-          <button type="button" data-goal="bulk">Bulk</button>
-        </div>
-        <div class="meta" id="goalDesc" style="margin-top:8px">A balanced, sustainable plan at your current calorie needs.</div>
-      </div>
-
-      <div class="card">
-        <h3>Your target</h3>
-        <div class="calc-cta" id="calcToggle">
-          <div class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18M3 9h18m-6 6h.01M15 18h.01M9 15h.01M9 18h.01"/></svg></div>
-          <div class="text">
-            <div class="t1">Not sure how many calories you need?</div>
-            <div class="t2">Answer a few quick questions and we'll work it out</div>
-          </div>
-          <svg class="chevron" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
-        </div>
-
-        <div class="calc-box" id="calcBox">
-          <div class="row">
-            <span class="goal-badge unit-badge active" data-unit="metric">kg / cm</span>
-            <span class="goal-badge unit-badge" data-unit="imperial">lb / ft-in</span>
-          </div>
-          <div class="row">
-            <div style="flex:1"><label>Sex</label><select id="calcSex"><option value="male">Male</option><option value="female">Female</option></select></div>
-            <div style="flex:1"><label>Age</label><input id="calcAge" value="22"></div>
-          </div>
-          <div class="row" id="metricInputs">
-            <div style="flex:1"><label>Weight (kg)</label><input id="calcWeightKg" value="70"></div>
-            <div style="flex:1"><label>Height (cm)</label><input id="calcHeightCm" value="175"></div>
-          </div>
-          <div class="row" id="imperialInputs" style="display:none">
-            <div style="flex:1"><label>Weight (lb)</label><input id="calcWeightLb" value="154"></div>
-            <div style="flex:1"><label>Height (ft)</label><input id="calcHeightFt" value="5"></div>
-            <div style="flex:1"><label>Height (in)</label><input id="calcHeightIn" value="9"></div>
-          </div>
-          <label style="font-weight:normal"><input type="checkbox" id="knowBodyFat" style="width:auto;display:inline;vertical-align:middle;margin-right:6px">I know my body fat % (more accurate)</label>
-          <div id="bodyFatField" style="display:none;margin-top:6px"><label>Body fat %</label><input id="calcBodyFat" value="20"></div>
-          <label style="margin-top:8px">How active are you day to day?</label>
-          <select id="calcActivity">
-            <option value="1.2">Mostly sitting — desk job, little exercise</option>
-            <option value="1.375">Light — walk or light exercise 1-3 days/week</option>
-            <option value="1.55" selected>Moderate — exercise 3-5 days/week</option>
-            <option value="1.725">Active — exercise 6-7 days/week</option>
-            <option value="1.9">Very active — physical job or train twice a day</option>
-          </select>
-          <label style="margin-top:8px">What's your goal?</label>
-          <div class="row" style="align-items:center;gap:10px;flex-wrap:nowrap">
-            <input type="range" id="goalSlider" min="-1" max="1" step="0.1" value="0" style="flex:1">
-            <span id="goalLabel" style="font-size:12.5px;min-width:150px;text-align:right">Stay at current weight</span>
-          </div>
-          <button id="calcRun" type="button" style="margin-top:12px">Work out my numbers</button>
-          <div class="calc-result" id="calcResult"></div>
-        </div>
-
-        <label>Calories</label>
-        <input id="calories" value="2000">
-        <div class="row">
-          <div style="flex:1"><label>Protein (g)</label><input id="protein" value="120"></div>
-          <div style="flex:1"><label>Carbs (g)</label><input id="carbs" value="220"></div>
-          <div style="flex:1"><label>Fat (g)</label><input id="fat" value="65"></div>
-        </div>
-
-        <label style="margin-top:6px"><input type="checkbox" id="usePantry" style="width:auto;display:inline;vertical-align:middle;margin-right:6px">Build around what's in my kitchen instead</label>
-        <div id="pantryFields" style="display:none;margin-top:8px">
-          <textarea id="pantry">bulgur, eggplant, kishk, frozen kafta, tomatoes, yogurt</textarea>
-        </div>
-      </div>
-
-      <button id="go">Generate my meal plan</button>
-      <div class="meta" id="status"></div>
-      <div id="output"></div>
-    </div>
-
-    <!-- Manual branch -->
-    <div id="manualPlanView" style="display:none">
-      <div class="card">
-        <h3>Add a meal to your plan</h3>
-        <label>Meal name</label>
-        <input id="planMealName" placeholder="Grilled chicken with rice">
-        <div class="macro-input-grid" style="margin-top:8px">
-          <div><label>Kcal</label><input id="planMealCals" placeholder="450"></div>
-          <div><label>Protein</label><input id="planMealProtein" placeholder="35"></div>
-          <div><label>Carbs</label><input id="planMealCarbs" placeholder="40"></div>
-          <div><label>Fat</label><input id="planMealFat" placeholder="12"></div>
-        </div>
-        <button id="planMealAdd" type="button" style="margin-top:12px">Add to my plan</button>
-      </div>
-      <div class="card">
-        <h3>My plan for today</h3>
-        <div id="manualPlanList"><div class="meta">No meals added yet.</div></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- CHAT TAB -->
-  <div class="panel" id="panel-chat">
-    <div class="card" style="padding:14px">
-      <h3 style="margin-bottom:8px">Ask about food, dishes, or cooking</h3>
-      <div class="chat-window" id="chatWindow">
-        <div class="bubble bot">Ahla! Ask me about any Lebanese dish, ingredient, or how to cook something step by step.</div>
-      </div>
-      <div class="chat-input-row">
-        <textarea id="chatInput" placeholder="What is ful medames? How do I make kibbeh?" rows="1"></textarea>
-        <button id="chatSend" type="button">Send</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- TRACK TAB (scan + manual add + today's log, combined) -->
-  <div class="panel" id="panel-track">
-    <div class="card">
-      <h3>Today so far</h3>
-      <div class="summary-grid">
-        <div class="summary-cell kcal">
-          <div class="s-num" id="sumKcal">0</div>
-          <div class="s-lbl" id="sumKcalLbl">of 2000 kcal</div>
-          <div class="mini-track"><div class="mini-fill" id="fillKcal" style="width:0%;background:var(--accent)"></div></div>
-        </div>
-        <div class="summary-cell p">
-          <div class="s-num" id="sumP">0</div>
-          <div class="s-lbl">protein (g)</div>
-          <div class="mini-track"><div class="mini-fill" id="fillP" style="width:0%;background:var(--lime)"></div></div>
-        </div>
-        <div class="summary-cell c">
-          <div class="s-num" id="sumC">0</div>
-          <div class="s-lbl">carbs (g)</div>
-          <div class="mini-track"><div class="mini-fill" id="fillC" style="width:0%;background:var(--gold)"></div></div>
-        </div>
-        <div class="summary-cell f">
-          <div class="s-num" id="sumF">0</div>
-          <div class="s-lbl">fat (g)</div>
-          <div class="mini-track"><div class="mini-fill" id="fillF" style="width:0%;background:#E89CC9"></div></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>Logged items</h3>
-      <div id="logList"><div class="meta">Nothing logged yet — scan or add something below.</div></div>
-      <button class="secondary" id="clearLog" type="button" style="margin-top:12px">Clear today's log</button>
-      <div class="meta" style="margin-top:8px">Saved for this session only — sign in with a real backend later to keep this across days.</div>
-    </div>
-
-    <div class="card">
-      <h3>Scan a product</h3>
-      <div id="reader" style="display:none"></div>
-      <button id="scanStart" type="button">Start scanning</button>
-      <button id="scanStop" type="button" class="secondary" style="display:none;margin-top:8px">Stop scanning</button>
-      <div class="meta" style="margin-top:8px">Uses your camera and looks the barcode up in Open Food Facts. Coverage for local Lebanese products can be patchy — add manually if it's not found.</div>
-      <div id="scanResult" style="margin-top:14px"></div>
-    </div>
-
-    <div class="card">
-      <h3>Add manually</h3>
-      <label>Item name</label>
-      <input id="manualName" placeholder="Almaza beer, 330ml">
-      <div class="macro-input-grid" style="margin-top:8px">
-        <div><label>Kcal</label><input id="manualCals" placeholder="150"></div>
-        <div><label>Protein</label><input id="manualProtein" placeholder="1"></div>
-        <div><label>Carbs</label><input id="manualCarbs" placeholder="12"></div>
-        <div><label>Fat</label><input id="manualFat" placeholder="0"></div>
-      </div>
-      <button class="secondary" id="manualAdd" type="button" style="margin-top:12px">Add to today's log</button>
     </div>
   </div>
 
@@ -631,825 +142,274 @@
       <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       Ask
     </button>
+    <button class="tab-btn" data-tab="scan">
+      <svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M3 12h18"/></svg>
+      Scan
+    </button>
     <button class="tab-btn" data-tab="track">
       <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
       Track
     </button>
+  </div>
+
+  <div class="content">
+
+    <!-- PLAN TAB -->
+    <div class="panel active" id="panel-plan">
+      <div class="branch-grid">
+        <div class="branch-card selected" id="branchAI">
+          <div class="icon-wrap"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/></svg></div>
+          <div class="title">AI plans it</div>
+          <div class="desc">Give a target, get a full day of meals</div>
+        </div>
+        <div class="branch-card" id="branchManual">
+          <div class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div>
+          <div class="title">I'll build it</div>
+          <div class="desc">Add your own meals by hand</div>
+        </div>
+      </div>
+
+      <!-- AI branch -->
+      <div id="aiPlanView">
+        <div class="card">
+          <h3>Your goal</h3>
+          <div class="segmented" id="goalSelect">
+            <button type="button" data-goal="cut">Cut</button>
+            <button type="button" data-goal="maintain" class="active">Maintain</button>
+            <button type="button" data-goal="bulk">Bulk</button>
+          </div>
+          <div class="meta" id="goalDesc" style="margin-top:8px">A balanced, sustainable plan at your current calorie needs.</div>
+        </div>
+
+        <div class="card">
+          <h3>Your target</h3>
+          <div class="calc-cta" id="calcToggle">
+            <div class="icon-wrap"><svg viewBox="0 0 24 24"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18M3 9h18m-6 6h.01M15 18h.01M9 15h.01M9 18h.01"/></svg></div>
+            <div class="text">
+              <div class="t1">Not sure how many calories you need?</div>
+              <div class="t2">Answer a few quick questions and we'll work it out</div>
+            </div>
+            <svg class="chevron" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+          </div>
+
+          <div class="calc-box" id="calcBox">
+            <div class="row">
+              <span class="goal-badge unit-badge active" data-unit="metric">kg / cm</span>
+              <span class="goal-badge unit-badge" data-unit="imperial">lb / ft-in</span>
+            </div>
+            <div class="row">
+              <div style="flex:1"><label>Sex</label><select id="calcSex"><option value="male">Male</option><option value="female">Female</option></select></div>
+              <div style="flex:1"><label>Age</label><input id="calcAge" value="22"></div>
+            </div>
+            <div class="row" id="metricInputs">
+              <div style="flex:1"><label>Weight (kg)</label><input id="calcWeightKg" value="70"></div>
+              <div style="flex:1"><label>Height (cm)</label><input id="calcHeightCm" value="175"></div>
+            </div>
+            <div class="row" id="imperialInputs" style="display:none">
+              <div style="flex:1"><label>Weight (lb)</label><input id="calcWeightLb" value="154"></div>
+              <div style="flex:1"><label>Height (ft)</label><input id="calcHeightFt" value="5"></div>
+              <div style="flex:1"><label>Height (in)</label><input id="calcHeightIn" value="9"></div>
+            </div>
+            <label style="font-weight:normal"><input type="checkbox" id="knowBodyFat" style="width:auto;display:inline;vertical-align:middle;margin-right:6px">I know my body fat % (more accurate)</label>
+            <div id="bodyFatField" style="display:none;margin-top:6px"><label>Body fat %</label><input id="calcBodyFat" value="20"></div>
+            <label style="margin-top:8px">How active are you day to day?</label>
+            <select id="calcActivity">
+              <option value="1.2">Mostly sitting — desk job, little exercise</option>
+              <option value="1.375">Light — walk or light exercise 1-3 days/week</option>
+              <option value="1.55" selected>Moderate — exercise 3-5 days/week</option>
+              <option value="1.725">Active — exercise 6-7 days/week</option>
+              <option value="1.9">Very active — physical job or train twice a day</option>
+            </select>
+            <label style="margin-top:8px">What's your goal?</label>
+            <div class="row" style="align-items:center;gap:10px;flex-wrap:nowrap">
+              <input type="range" id="goalSlider" min="-1" max="1" step="0.1" value="0" style="flex:1">
+              <span id="goalLabel" style="font-size:12.5px;min-width:150px;text-align:right">Stay at current weight</span>
+            </div>
+            <button id="calcRun" type="button" style="margin-top:12px">Work out my numbers</button>
+            <div class="calc-result" id="calcResult"></div>
+          </div>
+
+          <label>Calories</label>
+          <input id="calories" value="2000">
+          <div class="row">
+            <div style="flex:1"><label>Protein (g)</label><input id="protein" value="120"></div>
+            <div style="flex:1"><label>Carbs (g)</label><input id="carbs" value="220"></div>
+            <div style="flex:1"><label>Fat (g)</label><input id="fat" value="65"></div>
+          </div>
+
+          <label style="margin-top:6px"><input type="checkbox" id="usePantry" style="width:auto;display:inline;vertical-align:middle;margin-right:6px">Build around what's in my kitchen instead</label>
+          <div id="pantryFields" style="display:none;margin-top:8px">
+            <textarea id="pantry">bulgur, eggplant, kishk, frozen kafta, tomatoes, yogurt</textarea>
+          </div>
+        </div>
+
+        <button id="go">Generate my meal plan</button>
+        <div class="meta" id="status"></div>
+        <div id="output"></div>
+      </div>
+
+      <!-- Manual branch -->
+      <div id="manualPlanView" style="display:none">
+        <div class="card">
+          <h3>Add a meal to your plan</h3>
+          <label>Meal name</label>
+          <input id="planMealName" placeholder="Grilled chicken with rice">
+          <div class="macro-input-grid" style="margin-top:8px">
+            <div><label>Kcal</label><input id="planMealCals" placeholder="450"></div>
+            <div><label>Protein</label><input id="planMealProtein" placeholder="35"></div>
+            <div><label>Carbs</label><input id="planMealCarbs" placeholder="40"></div>
+            <div><label>Fat</label><input id="planMealFat" placeholder="12"></div>
+          </div>
+          <button id="planMealAdd" type="button" style="margin-top:12px">Add to my plan</button>
+        </div>
+        <div class="card">
+          <h3>My plan for today</h3>
+          <div id="manualPlanList"><div class="meta">No meals added yet.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHAT TAB -->
+    <div class="panel" id="panel-chat">
+      <div class="card" style="padding:14px">
+        <h3 style="margin-bottom:8px">Ask about food, dishes, or cooking</h3>
+        <div class="chat-window" id="chatWindow">
+          <div class="bubble bot">Ahla! Ask me about any Lebanese dish, ingredient, or how to cook something step by step.</div>
+        </div>
+        <div class="chat-input-row">
+          <textarea id="chatInput" placeholder="What is ful medames? How do I make kibbeh?" rows="1"></textarea>
+          <button id="chatSend" type="button">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCAN TAB (its own section — scanned products still feed the daily log) -->
+    <div class="panel" id="panel-scan">
+      <div class="card">
+        <h3>Scan a product</h3>
+        <div id="reader" style="display:none"></div>
+        <button id="scanStart" type="button">Start scanning</button>
+        <button id="scanStop" type="button" class="secondary" style="display:none;margin-top:8px">Stop scanning</button>
+        <div class="meta" style="margin-top:8px">Uses your camera and looks the barcode up in Open Food Facts. Coverage for local Lebanese products can be patchy — add manually if it's not found.</div>
+        <div id="scanResult" style="margin-top:14px"></div>
+      </div>
+
+      <div class="card">
+        <h3>Add manually</h3>
+        <label>Item name</label>
+        <input id="manualName" placeholder="Almaza beer, 330ml">
+        <div class="macro-input-grid" style="margin-top:8px">
+          <div><label>Kcal</label><input id="manualCals" placeholder="150"></div>
+          <div><label>Protein</label><input id="manualProtein" placeholder="1"></div>
+          <div><label>Carbs</label><input id="manualCarbs" placeholder="12"></div>
+          <div><label>Fat</label><input id="manualFat" placeholder="0"></div>
+        </div>
+        <button class="secondary" id="manualAdd" type="button" style="margin-top:12px">Add to today's log</button>
+      </div>
+    </div>
+
+    <!-- TRACK TAB (view/manage what's already logged) -->
+    <div class="panel" id="panel-track">
+      <div class="card">
+        <h3>Today so far</h3>
+        <div class="summary-grid">
+          <div class="summary-cell kcal">
+            <div class="s-num" id="sumKcal">0</div>
+            <div class="s-lbl" id="sumKcalLbl">of 2000 kcal</div>
+            <div class="mini-track"><div class="mini-fill" id="fillKcal" style="width:0%;background:var(--accent)"></div></div>
+          </div>
+          <div class="summary-cell p">
+            <div class="s-num" id="sumP">0</div>
+            <div class="s-lbl">protein (g)</div>
+            <div class="mini-track"><div class="mini-fill" id="fillP" style="width:0%;background:var(--green)"></div></div>
+          </div>
+          <div class="summary-cell c">
+            <div class="s-num" id="sumC">0</div>
+            <div class="s-lbl">carbs (g)</div>
+            <div class="mini-track"><div class="mini-fill" id="fillC" style="width:0%;background:var(--gold)"></div></div>
+          </div>
+          <div class="summary-cell f">
+            <div class="s-num" id="sumF">0</div>
+            <div class="s-lbl">fat (g)</div>
+            <div class="mini-track"><div class="mini-fill" id="fillF" style="width:0%;background:var(--pink)"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Logged items</h3>
+        <div id="logList"><div class="meta">Nothing logged yet — head to Scan to add something.</div></div>
+        <button class="secondary" id="clearLog" type="button" style="margin-top:12px">Clear today's log</button>
+      </div>
+    </div>
 
   </div>
+
+  <!-- PROFILE MODAL: view, edit, and delete -->
+  <div id="profileModal">
+    <div class="profile-card">
+
+      <div class="profile-view" id="profileViewMode">
+        <div class="profile-avatar-lg" id="profileAvatarLg">G</div>
+        <div class="profile-name" id="profileName">Guest</div>
+        <div class="profile-email" id="profileEmail">Not signed in with an account</div>
+        <div class="profile-row"><span>Goal</span><b id="profileGoal">Maintain</b></div>
+        <div class="profile-row"><span>Daily calorie target</span><b id="profileCalTarget">2000 kcal</b></div>
+        <div class="profile-row"><span>Protein / Carbs / Fat</span><b id="profileMacros">120g / 220g / 65g</b></div>
+        <button id="profileEditBtn" type="button" style="margin-top:16px">Edit my info</button>
+        <button class="secondary" id="profileClose" type="button" style="margin-top:10px">Close</button>
+        <button class="ghost" id="profileLogout" type="button" style="display:block;margin:14px auto 0">Log out</button>
+        <button class="ghost" id="profileDeleteBtn" type="button" style="display:block;margin:8px auto 0;color:#C43B1F">Delete my account</button>
+      </div>
+
+      <div class="profile-edit" id="profileEditMode">
+        <h3 style="margin-bottom:4px">Edit your info</h3>
+        <div class="meta" style="margin-bottom:14px">Saved straight to your account.</div>
+        <div class="row">
+          <div style="flex:1"><label>Sex</label><select id="editSex"><option value="male">Male</option><option value="female">Female</option></select></div>
+          <div style="flex:1"><label>Age</label><input id="editAge"></div>
+        </div>
+        <div class="row">
+          <div style="flex:1"><label>Weight (kg)</label><input id="editWeight"></div>
+          <div style="flex:1"><label>Height (cm)</label><input id="editHeight"></div>
+        </div>
+        <label>Activity level</label>
+        <select id="editActivity">
+          <option value="1.2">Mostly sitting — desk job, little exercise</option>
+          <option value="1.375">Light — walk or light exercise 1-3 days/week</option>
+          <option value="1.55">Moderate — exercise 3-5 days/week</option>
+          <option value="1.725">Active — exercise 6-7 days/week</option>
+          <option value="1.9">Very active — physical job or train twice a day</option>
+        </select>
+        <label style="margin-top:8px">Goal</label>
+        <div class="segmented" id="editGoalSelect">
+          <button type="button" data-goal="cut">Cut</button>
+          <button type="button" data-goal="maintain">Maintain</button>
+          <button type="button" data-goal="bulk">Bulk</button>
+        </div>
+        <label style="margin-top:8px">Allergies</label>
+        <input id="editAllergies">
+        <label style="margin-top:8px">Foods you don't like</label>
+        <input id="editDislikes">
+        <div class="row" style="margin-top:16px;gap:8px">
+          <button class="secondary" id="editCancel" type="button">Cancel</button>
+          <button id="editSave" type="button">Save changes</button>
+        </div>
+      </div>
+
+      <div id="deleteConfirmView" style="display:none">
+        <h3 style="margin-bottom:6px;color:#C43B1F">Delete your account?</h3>
+        <div class="meta" style="margin-bottom:16px">This permanently deletes your profile and daily logs. This can't be undone.</div>
+        <div class="row" style="gap:8px">
+          <button class="secondary" id="deleteCancel" type="button">Cancel</button>
+          <button class="danger" id="deleteConfirmBtn" type="button">Delete permanently</button>
+        </div>
+        <div class="auth-error" id="deleteError" style="text-align:center"></div>
+      </div>
+
+    </div>
+  </div>
+
 </div>
 
-<script type="module">
-/* Firebase — real accounts and persistent storage.
-   Config below is safe to expose client-side; Firebase security
-   is enforced through Firestore rules, not by hiding this object. */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-  signOut, onAuthStateChanged, updateProfile
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import {
-  getFirestore, doc, setDoc, getDoc
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCKxQz2qJeJK-yRp3Y8hfcUVjGYKTFZPYg",
-  authDomain: "dietpal-65.firebaseapp.com",
-  projectId: "dietpal-65",
-  storageBucket: "dietpal-65.firebasestorage.app",
-  messagingSenderId: "426303260735",
-  appId: "1:426303260735:web:7a5695b1ec96e55653d08a"
-};
-const fbApp = initializeApp(firebaseConfig);
-const auth = getAuth(fbApp);
-const db = getFirestore(fbApp);
-function todayKey() { return new Date().toISOString().slice(0, 10); }
-
-/* API calls now go through /netlify/functions/* proxies — no keys live in this file anymore.
-   Set GROQ_API_KEY and GEMINI_API_KEY as environment variables in your Netlify site settings. */
-
-/* ---------- Auth (real accounts via Firebase) ---------- */
-let currentUser = null; // { name, email, uid } or { name:'Guest', email:null, uid:null }
-let pendingUser = null;
-
-document.querySelectorAll('.eye-toggle').forEach(btn => btn.addEventListener('click', () => {
-  const input = document.getElementById(btn.dataset.target);
-  const showing = input.type === 'text';
-  input.type = showing ? 'password' : 'text';
-  btn.innerHTML = showing
-    ? '<svg viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>'
-    : '<svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A10.94 10.94 0 0 1 12 5c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>';
-  btn.setAttribute('aria-label', showing ? 'Show password' : 'Hide password');
-}));
-
-function showAuthForm(which) {
-  document.getElementById('toggleLogin').classList.toggle('active', which === 'login');
-  document.getElementById('toggleSignup').classList.toggle('active', which === 'signup');
-  document.getElementById('loginForm').classList.toggle('active', which === 'login');
-  document.getElementById('signupForm').classList.toggle('active', which === 'signup');
-}
-document.getElementById('toggleLogin').addEventListener('click', () => showAuthForm('login'));
-document.getElementById('toggleSignup').addEventListener('click', () => showAuthForm('signup'));
-
-async function saveProfileToFirestore() {
-  if (!currentUser || !currentUser.uid) return;
-  try {
-    await setDoc(doc(db, 'users', currentUser.uid), {
-      name: currentUser.name,
-      email: currentUser.email,
-      allergies: userProfile.allergies,
-      dislikes: userProfile.dislikes,
-      sex: userProfile.sex || null,
-      age: userProfile.age || null,
-      weightKg: userProfile.weightKg || null,
-      heightCm: userProfile.heightCm || null,
-      activity: userProfile.activity || null,
-      maintenanceCalories,
-      goal: selectedGoal,
-      dailyTargets
-    }, { merge: true });
-  } catch (err) { console.error('Failed to save profile:', err); }
-}
-
-async function saveLogToFirestore() {
-  if (!currentUser || !currentUser.uid) return;
-  try {
-    await setDoc(doc(db, 'users', currentUser.uid, 'logs', todayKey()), { items: logItems });
-  } catch (err) { console.error('Failed to save log:', err); }
-}
-
-async function loadUserData(uid) {
-  try {
-    const profileSnap = await getDoc(doc(db, 'users', uid));
-    if (profileSnap.exists()) {
-      const data = profileSnap.data();
-      userProfile = {
-        allergies: data.allergies || '', dislikes: data.dislikes || '',
-        sex: data.sex || null, age: data.age || null, weightKg: data.weightKg || null,
-        heightCm: data.heightCm || null, activity: data.activity || null
-      };
-      if (typeof data.maintenanceCalories === 'number') maintenanceCalories = data.maintenanceCalories;
-      if (data.dailyTargets) {
-        dailyTargets = data.dailyTargets;
-        document.getElementById('calories').value = dailyTargets.calories;
-        document.getElementById('protein').value = dailyTargets.protein;
-        document.getElementById('carbs').value = dailyTargets.carbs;
-        document.getElementById('fat').value = dailyTargets.fat;
-      }
-      if (data.goal) {
-        selectedGoal = data.goal;
-        document.querySelectorAll('#goalSelect button').forEach(b => b.classList.toggle('active', b.dataset.goal === data.goal));
-        document.getElementById('goalDesc').textContent = goalCopy[data.goal];
-      }
-    }
-    const logSnap = await getDoc(doc(db, 'users', uid, 'logs', todayKey()));
-    if (logSnap.exists()) {
-      logItems = logSnap.data().items || [];
-      renderLog();
-    }
-  } catch (err) { console.error('Failed to load user data:', err); }
-}
-
-function enterApp(user) {
-  currentUser = user;
-  document.getElementById('loadingGate').style.display = 'none';
-  document.getElementById('authGate').style.display = 'none';
-  document.getElementById('appRoot').classList.remove('app-hidden');
-  document.getElementById('userNameLabel').textContent = user.name;
-  document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
-}
-
-// Auto-restore session on page load — Firebase remembers the sign-in across reloads.
-// Nothing (app or auth screen) is shown until this resolves, so there's no flash of content.
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    await loadUserData(user.uid);
-    enterApp({ name: user.displayName || user.email.split('@')[0], email: user.email, uid: user.uid });
-  } else if (!currentUser) {
-    document.getElementById('loadingGate').style.display = 'none';
-    document.getElementById('authGate').style.display = 'flex';
-  }
-});
-
-document.getElementById('userPill').addEventListener('click', () => {
-  document.getElementById('profileAvatarLg').textContent = currentUser.name.charAt(0).toUpperCase();
-  document.getElementById('profileName').textContent = currentUser.name;
-  document.getElementById('profileEmail').textContent = currentUser.email || 'Guest — not signed in with an account';
-  document.getElementById('profileCalTarget').textContent = `${dailyTargets.calories} kcal`;
-  document.getElementById('profileMacros').textContent = `${dailyTargets.protein}g / ${dailyTargets.carbs}g / ${dailyTargets.fat}g`;
-  document.getElementById('profileModal').classList.add('open');
-});
-document.getElementById('profileClose').addEventListener('click', () => document.getElementById('profileModal').classList.remove('open'));
-document.getElementById('profileModal').addEventListener('click', (e) => { if (e.target.id === 'profileModal') e.currentTarget.classList.remove('open'); });
-document.getElementById('profileLogout').addEventListener('click', async () => {
-  document.getElementById('profileModal').classList.remove('open');
-  if (currentUser && currentUser.uid) { await signOut(auth); }
-  currentUser = null;
-  logItems = [];
-  document.getElementById('appRoot').classList.add('app-hidden');
-  document.getElementById('authGate').style.display = 'flex';
-});
-
-document.getElementById('signupBtn').addEventListener('click', async () => {
-  const errEl = document.getElementById('signupError');
-  const name = document.getElementById('signupName').value.trim();
-  const email = document.getElementById('signupEmail').value.trim().toLowerCase();
-  const password = document.getElementById('signupPassword').value;
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  if (!name) { errEl.textContent = 'Enter your name.'; return; }
-  if (!emailPattern.test(email)) { errEl.textContent = 'Enter a valid email address.'; return; }
-  if (password.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; return; }
-
-  errEl.textContent = 'Creating your account...';
-  try {
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
-    await updateProfile(cred.user, { displayName: name });
-    errEl.textContent = '';
-    pendingUser = { name, email, uid: cred.user.uid };
-    document.getElementById('authGate').style.display = 'none';
-    startOnboarding();
-  } catch (err) {
-    errEl.textContent = err.code === 'auth/email-already-in-use'
-      ? 'An account with this email already exists — log in instead.'
-      : 'Something went wrong: ' + err.message;
-  }
-});
-
-document.getElementById('loginBtn').addEventListener('click', async () => {
-  const errEl = document.getElementById('loginError');
-  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-  const password = document.getElementById('loginPassword').value;
-
-  errEl.textContent = 'Logging in...';
-  try {
-    const cred = await signInWithEmailAndPassword(auth, email, password);
-    errEl.textContent = '';
-    await loadUserData(cred.user.uid);
-    enterApp({ name: cred.user.displayName || email.split('@')[0], email, uid: cred.user.uid });
-  } catch (err) {
-    errEl.textContent = (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password')
-      ? 'Incorrect email or password.'
-      : 'Something went wrong: ' + err.message;
-  }
-});
-
-
-/* ---------- Onboarding wizard ---------- */
-let onboardStep = 1;
-const onboardGoalCopy = {
-  cut: 'A fat-loss plan: moderate deficit, higher protein to protect muscle, high-volume foods to stay full.',
-  maintain: 'A balanced, sustainable plan at your current calorie needs.',
-  bulk: 'A muscle-gain plan: calorie surplus, enough carbs to fuel training, protein spread across meals.'
-};
-let onboardGoal = 'maintain';
-let userProfile = { allergies: '', dislikes: '' };
-
-document.querySelectorAll('#obGoalSelect button').forEach(btn => btn.addEventListener('click', () => {
-  document.querySelectorAll('#obGoalSelect button').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  onboardGoal = btn.dataset.goal;
-  document.getElementById('obGoalDesc').textContent = onboardGoalCopy[onboardGoal];
-}));
-
-function startOnboarding() {
-  onboardStep = 1;
-  showOnboardStep(1);
-  document.getElementById('onboardGate').classList.add('open');
-}
-function showOnboardStep(n) {
-  document.querySelectorAll('.onboard-step').forEach(s => s.classList.remove('active'));
-  document.getElementById('obStep' + n).classList.add('active');
-  document.querySelectorAll('.onboard-progress .dot').forEach(d => d.classList.toggle('active', parseInt(d.dataset.step) === n));
-  document.getElementById('obBack').style.display = n === 1 ? 'none' : 'block';
-  document.getElementById('obNext').textContent = n === 3 ? 'Finish' : 'Continue';
-}
-document.getElementById('obBack').addEventListener('click', () => { onboardStep--; showOnboardStep(onboardStep); });
-document.getElementById('obNext').addEventListener('click', () => {
-  if (onboardStep < 3) { onboardStep++; showOnboardStep(onboardStep); return; }
-
-  // Finish: compute targets from the answers, same math as the in-app calculator
-  const sex = document.getElementById('obSex').value;
-  const age = parseFloat(document.getElementById('obAge').value) || 22;
-  const weightKg = parseFloat(document.getElementById('obWeight').value) || 70;
-  const heightCm = parseFloat(document.getElementById('obHeight').value) || 175;
-  const activity = parseFloat(document.getElementById('obActivity').value);
-  const resting = sex === 'male'
-    ? 10 * weightKg + 6.25 * heightCm - 5 * age + 5
-    : 10 * weightKg + 6.25 * heightCm - 5 * age - 161;
-  const dailyBurn = resting * activity;
-  maintenanceCalories = dailyBurn;
-  const weeklyGoalKg = onboardGoal === 'cut' ? -0.5 : (onboardGoal === 'bulk' ? 0.3 : 0);
-  const target = Math.round(dailyBurn + (weeklyGoalKg * 7700) / 7);
-
-  document.getElementById('calories').value = target;
-  dailyTargets.calories = target;
-  selectedGoal = onboardGoal;
-  document.querySelectorAll('#goalSelect button').forEach(b => b.classList.toggle('active', b.dataset.goal === onboardGoal));
-  document.getElementById('goalDesc').textContent = goalCopy[onboardGoal];
-  applyGoalMacros(onboardGoal);
-
-  userProfile = {
-    sex, age, weightKg, heightCm, activity,
-    allergies: document.getElementById('obAllergies').value.trim(),
-    dislikes: document.getElementById('obDislikes').value.trim()
-  };
-
-  document.getElementById('onboardGate').classList.remove('open');
-  enterApp(pendingUser);
-  saveProfileToFirestore();
-});
-
-
-/* ---------- Tab switching ---------- */
-document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
-  if (btn.dataset.tab === 'track') renderLog();
-}));
-
-/* ---------- Plan branch toggle ---------- */
-document.getElementById('branchAI').addEventListener('click', () => {
-  document.getElementById('branchAI').classList.add('selected');
-  document.getElementById('branchManual').classList.remove('selected');
-  document.getElementById('aiPlanView').style.display = 'block';
-  document.getElementById('manualPlanView').style.display = 'none';
-});
-document.getElementById('branchManual').addEventListener('click', () => {
-  document.getElementById('branchManual').classList.add('selected');
-  document.getElementById('branchAI').classList.remove('selected');
-  document.getElementById('aiPlanView').style.display = 'none';
-  document.getElementById('manualPlanView').style.display = 'block';
-});
-document.getElementById('usePantry').addEventListener('change', (e) => {
-  document.getElementById('pantryFields').style.display = e.target.checked ? 'block' : 'none';
-});
-
-/* ---------- Calorie calculator ---------- */
-document.getElementById('calcToggle').addEventListener('click', () => {
-  document.getElementById('calcBox').classList.toggle('open');
-  document.getElementById('calcToggle').classList.toggle('open');
-});
-let unit = 'metric';
-document.querySelectorAll('.unit-badge').forEach(b => b.addEventListener('click', () => {
-  document.querySelectorAll('.unit-badge').forEach(x => x.classList.remove('active'));
-  b.classList.add('active');
-  unit = b.dataset.unit;
-  document.getElementById('metricInputs').style.display = unit === 'metric' ? 'flex' : 'none';
-  document.getElementById('imperialInputs').style.display = unit === 'imperial' ? 'flex' : 'none';
-}));
-document.getElementById('knowBodyFat').addEventListener('change', (e) => {
-  document.getElementById('bodyFatField').style.display = e.target.checked ? 'block' : 'none';
-});
-function goalText(kgPerWeek) {
-  const abs = Math.abs(kgPerWeek).toFixed(1);
-  if (kgPerWeek < -0.05) return `Lose weight (~${abs} kg/week)`;
-  if (kgPerWeek > 0.05) return `Gain weight (~${abs} kg/week)`;
-  return 'Stay at current weight';
-}
-document.getElementById('goalSlider').addEventListener('input', (e) => {
-  document.getElementById('goalLabel').textContent = goalText(parseFloat(e.target.value));
-});
-
-let dailyTargets = { calories: 2000, protein: 120, carbs: 220, fat: 65 };
-let maintenanceCalories = null; // TDEE before any goal-based adjustment, once known
-
-/* ---------- Goal selection (cut / maintain / bulk) ---------- */
-let selectedGoal = 'maintain';
-const goalCopy = {
-  cut: 'A fat-loss plan: moderate deficit, higher protein to protect muscle, high-volume foods to stay full.',
-  maintain: 'A balanced, sustainable plan at your current calorie needs.',
-  bulk: 'A muscle-gain plan: calorie surplus, enough carbs to fuel training, protein spread across meals.'
-};
-function goalCalorieAdjustment(goal) {
-  const weeklyGoalKg = goal === 'cut' ? -0.5 : (goal === 'bulk' ? 0.3 : 0);
-  return Math.round((weeklyGoalKg * 7700) / 7);
-}
-function applyGoalMacros(goal) {
-  // If we know real maintenance calories (from the calculator or onboarding), switching
-  // goals also moves the calorie target itself, not just the macro split at a frozen number.
-  let cal = parseFloat(document.getElementById('calories').value) || dailyTargets.calories;
-  if (maintenanceCalories !== null) {
-    cal = Math.round(maintenanceCalories + goalCalorieAdjustment(goal));
-    document.getElementById('calories').value = cal;
-    dailyTargets.calories = cal;
-  }
-
-  let proteinG, carbG, fatG;
-  if (userProfile.weightKg) {
-    // Same bodyweight-aware formula as the detailed calculator, so switching goals
-    // here and running the calculator never disagree on the numbers.
-    const proteinPerKg = goal === 'bulk' ? 2.0 : (goal === 'cut' ? 2.2 : 1.8);
-    proteinG = Math.round(userProfile.weightKg * proteinPerKg);
-    const fatCals = cal * 0.28;
-    fatG = Math.round(fatCals / 9);
-    carbG = Math.round(Math.max(cal - proteinG * 4 - fatCals, 0) / 4);
-  } else {
-    // No known bodyweight yet (e.g. before onboarding) — fall back to a simple percentage split.
-    const splits = { cut: [0.35, 0.35, 0.30], maintain: [0.30, 0.40, 0.30], bulk: [0.25, 0.50, 0.25] };
-    const [pPct, cPct, fPct] = splits[goal];
-    proteinG = Math.round(cal * pPct / 4);
-    carbG = Math.round(cal * cPct / 4);
-    fatG = Math.round(cal * fPct / 9);
-  }
-  document.getElementById('protein').value = proteinG;
-  document.getElementById('carbs').value = carbG;
-  document.getElementById('fat').value = fatG;
-  dailyTargets.protein = proteinG; dailyTargets.carbs = carbG; dailyTargets.fat = fatG;
-}
-document.querySelectorAll('#goalSelect button').forEach(btn => btn.addEventListener('click', () => {
-  document.querySelectorAll('#goalSelect button').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  selectedGoal = btn.dataset.goal;
-  document.getElementById('goalDesc').textContent = goalCopy[selectedGoal];
-  applyGoalMacros(selectedGoal);
-  saveProfileToFirestore();
-}));
-
-
-document.getElementById('calcRun').addEventListener('click', () => {
-  const sex = document.getElementById('calcSex').value;
-  const age = parseFloat(document.getElementById('calcAge').value);
-  let weightKg, heightCm;
-  if (unit === 'metric') {
-    weightKg = parseFloat(document.getElementById('calcWeightKg').value);
-    heightCm = parseFloat(document.getElementById('calcHeightCm').value);
-  } else {
-    weightKg = parseFloat(document.getElementById('calcWeightLb').value) * 0.453592;
-    const ft = parseFloat(document.getElementById('calcHeightFt').value) || 0;
-    const inch = parseFloat(document.getElementById('calcHeightIn').value) || 0;
-    heightCm = (ft * 12 + inch) * 2.54;
-  }
-  const activity = parseFloat(document.getElementById('calcActivity').value);
-  const knowsBodyFat = document.getElementById('knowBodyFat').checked;
-  const bodyFatPct = parseFloat(document.getElementById('calcBodyFat').value);
-  const weeklyGoalKg = parseFloat(document.getElementById('goalSlider').value);
-
-  let resting, methodNote;
-  if (knowsBodyFat && !isNaN(bodyFatPct) && bodyFatPct > 0) {
-    const leanMassKg = weightKg * (1 - bodyFatPct / 100);
-    resting = 370 + 21.6 * leanMassKg;
-    methodNote = 'Estimated using your body fat % for extra accuracy.';
-  } else {
-    resting = sex === 'male'
-      ? 10 * weightKg + 6.25 * heightCm - 5 * age + 5
-      : 10 * weightKg + 6.25 * heightCm - 5 * age - 161;
-    methodNote = 'Estimated from your sex, age, height and weight.';
-  }
-  const dailyBurn = resting * activity;
-  maintenanceCalories = dailyBurn;
-  const dailyAdjustment = (weeklyGoalKg * 7700) / 7;
-  const target = Math.round(dailyBurn + dailyAdjustment);
-  const proteinPerKg = weeklyGoalKg > 0.05 ? 2.0 : (weeklyGoalKg < -0.05 ? 2.2 : 1.8);
-  const proteinG = Math.round(weightKg * proteinPerKg);
-  const fatCals = target * 0.28;
-  const fatG = Math.round(fatCals / 9);
-  const carbG = Math.round(Math.max(target - proteinG * 4 - fatCals, 0) / 4);
-
-  const resultBox = document.getElementById('calcResult');
-  resultBox.style.display = 'block';
-  resultBox.innerHTML = `Resting calories: ~${Math.round(resting)} kcal/day<br>
-    Daily burn with activity: ~${Math.round(dailyBurn)} kcal/day<br>
-    <span style="color:var(--ink-soft)">${methodNote}</span><br><br>
-    To ${goalText(weeklyGoalKg).toLowerCase()}, aim for <strong>${target} kcal/day</strong><br>
-    Suggested split: ${proteinG}g protein, ${carbG}g carbs, ${fatG}g fat`;
-
-  document.getElementById('calories').value = target;
-  document.getElementById('protein').value = proteinG;
-  document.getElementById('carbs').value = carbG;
-  document.getElementById('fat').value = fatG;
-  dailyTargets = { calories: target, protein: proteinG, carbs: carbG, fat: fatG };
-  const syncedGoal = weeklyGoalKg < -0.05 ? 'cut' : (weeklyGoalKg > 0.05 ? 'bulk' : 'maintain');
-  selectedGoal = syncedGoal;
-  document.querySelectorAll('#goalSelect button').forEach(b => b.classList.toggle('active', b.dataset.goal === syncedGoal));
-  document.getElementById('goalDesc').textContent = goalCopy[syncedGoal];
-  saveProfileToFirestore();
-});
-['calories','protein','carbs','fat'].forEach(id => {
-  document.getElementById(id).addEventListener('change', (e) => {
-    dailyTargets[id] = parseFloat(e.target.value) || dailyTargets[id];
-  });
-});
-
-/* ---------- AI Plan generator (structured JSON -> cards) ---------- */
-document.getElementById('go').addEventListener('click', async () => {
-  const btn = document.getElementById('go');
-  const status = document.getElementById('status');
-  const output = document.getElementById('output');
-  const usePantry = document.getElementById('usePantry').checked;
-  btn.disabled = true;
-  status.innerHTML = '<span class="typing-dots"><span></span><span></span><span></span></span> Working on your plan';
-  output.innerHTML = '<div class="skeleton-line" style="width:90%"></div><div class="skeleton-line" style="width:75%"></div><div class="skeleton-line" style="width:85%"></div>';
-
-  let userAsk;
-  if (usePantry) {
-    const pantry = document.getElementById('pantry').value;
-    userAsk = `I have these ingredients at home: ${pantry}. Build a day of Lebanese-style meals using these where possible, and mention what else to add.`;
-  } else {
-    const { calories, protein, carbs, fat } = dailyTargets;
-    userAsk = `Build one day of Lebanese meals hitting approximately ${calories} kcal, ${protein}g protein, ${carbs}g carbs, ${fat}g fat.`;
-  }
-
-  const goalInstructions = {
-    cut: 'The goal is CUTTING (fat loss while preserving muscle). Act like an experienced coach building a real cut-phase day: prioritize high-protein, high-volume, lower-calorie-density foods (lean proteins, vegetables, fiber) so it stays satiating despite the deficit. Spread protein across meals.',
-    maintain: 'The goal is MAINTENANCE. Build a balanced, everyday-sustainable day — nothing extreme, good variety, realistic portions.',
-    bulk: 'The goal is BULKING (muscle gain). Act like an experienced coach building a real bulk-phase day: calorie-dense but still nutritious, enough carbs to fuel training and recovery, protein spread evenly across meals so it is not one huge dose at dinner.'
-  };
-
-  const restrictions = [];
-  if (userProfile.allergies) restrictions.push(`Strictly avoid these allergens: ${userProfile.allergies}.`);
-  if (userProfile.dislikes) restrictions.push(`Avoid these disliked foods: ${userProfile.dislikes}.`);
-
-  const profileLine = userProfile.weightKg
-    ? `User profile: ${userProfile.sex}, age ${userProfile.age}, ${userProfile.weightKg}kg, ${userProfile.heightCm}cm.`
-    : '';
-
-  const systemPrompt = `You are a Lebanese meal planning assistant working like a sports nutrition coach. Respond with ONLY valid JSON, no markdown fences, no extra text, matching exactly this shape:
-{"coachNote":"one or two sentences, coach tone, explaining how this specific plan supports the stated goal","meals":[{"time":"Breakfast","name":"Dish name","description":"one short sentence","calories":000,"protein":00,"carbs":00,"fat":00}],"totals":{"calories":000,"protein":00,"carbs":00,"fat":00}}
-${profileLine}
-${goalInstructions[selectedGoal]}
-${restrictions.join(' ')}
-Use real Lebanese/Levantine dishes. Keep descriptions to one short sentence. Numbers must be realistic and the totals must be the sum of the meals.`;
-
-  try {
-    const response = await fetch('/.netlify/functions/gemini-plan', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: userAsk }] }],
-        systemInstruction: { parts: [{ text: systemPrompt }] },
-        generationConfig: { responseMimeType: 'application/json' }
-      })
-    });
-    const data = await response.json();
-    if (data.error) throw new Error(typeof data.error === 'string' ? data.error : data.error.message);
-    const raw = data.candidates[0].content.parts.map(p => p.text).join('');
-    const plan = JSON.parse(raw);
-    renderMealPlan(plan, output);
-    status.textContent = usePantry ? 'Built from your pantry' : 'Built for your target';
-  } catch (err) {
-    output.innerHTML = `<div class="meta">Something went wrong generating the plan: ${err.message}</div>`;
-    status.textContent = '';
-  }
-  btn.disabled = false;
-});
-
-function renderMealPlan(plan, container) {
-  container.innerHTML = '';
-  if (plan.coachNote) {
-    const note = document.createElement('div');
-    note.className = 'coach-note';
-    note.innerHTML = `<span class="cn-tag">${selectedGoal}</span>${plan.coachNote}`;
-    container.appendChild(note);
-  }
-  plan.meals.forEach((m, idx) => {
-    const card = document.createElement('div');
-    card.className = 'meal-card';
-    card.innerHTML = `
-      <div class="m-top"><span class="m-time">${m.time || ''}</span></div>
-      <div class="m-name">${m.name}</div>
-      <div class="m-desc">${m.description || ''}</div>
-      <div class="macro-chips">
-        <span class="macro-chip kcal">${m.calories} kcal</span>
-        <span class="macro-chip p">${m.protein}g P</span>
-        <span class="macro-chip c">${m.carbs}g C</span>
-        <span class="macro-chip f">${m.fat}g F</span>
-      </div>
-      <button class="secondary small" data-logged="false" style="margin-top:10px;width:100%">Mark as eaten</button>`;
-    const logBtn = card.querySelector('button');
-    let loggedId = null;
-    logBtn.addEventListener('click', () => {
-      const logged = logBtn.dataset.logged === 'true';
-      if (!logged) {
-        loggedId = ++logIdCounter;
-        logItems.push({ id: loggedId, name: m.name, calories: m.calories, protein: m.protein, carbs: m.carbs, fat: m.fat });
-        logBtn.textContent = 'Logged ✓ (tap to undo)';
-        logBtn.dataset.logged = 'true';
-      } else {
-        logItems = logItems.filter(i => i.id !== loggedId);
-        logBtn.textContent = 'Mark as eaten';
-        logBtn.dataset.logged = 'false';
-        loggedId = null;
-      }
-      renderLog();
-    });
-    container.appendChild(card);
-  });
-  if (plan.totals) {
-    const t = document.createElement('div');
-    t.className = 'plan-totals';
-    t.innerHTML = `
-      <div><div class="t-num">${plan.totals.calories}</div><div class="t-lbl">kcal</div></div>
-      <div><div class="t-num">${plan.totals.protein}g</div><div class="t-lbl">protein</div></div>
-      <div><div class="t-num">${plan.totals.carbs}g</div><div class="t-lbl">carbs</div></div>
-      <div><div class="t-num">${plan.totals.fat}g</div><div class="t-lbl">fat</div></div>`;
-    container.appendChild(t);
-  }
-}
-
-/* ---------- Manual plan builder ---------- */
-let manualPlanItems = [];
-document.getElementById('planMealAdd').addEventListener('click', () => {
-  const name = document.getElementById('planMealName').value.trim();
-  const calories = parseFloat(document.getElementById('planMealCals').value) || 0;
-  const protein = parseFloat(document.getElementById('planMealProtein').value) || 0;
-  const carbs = parseFloat(document.getElementById('planMealCarbs').value) || 0;
-  const fat = parseFloat(document.getElementById('planMealFat').value) || 0;
-  if (!name) return;
-  manualPlanItems.push({ name, calories, protein, carbs, fat });
-  ['planMealName','planMealCals','planMealProtein','planMealCarbs','planMealFat'].forEach(id => document.getElementById(id).value = '');
-  renderManualPlan();
-});
-function renderManualPlan() {
-  const list = document.getElementById('manualPlanList');
-  if (manualPlanItems.length === 0) { list.innerHTML = '<div class="meta">No meals added yet.</div>'; return; }
-  list.innerHTML = '';
-  manualPlanItems.forEach((item, idx) => {
-    const row = document.createElement('div');
-    row.className = 'manual-item';
-    row.innerHTML = `<div class="mi-top">
-        <div>
-          <div class="mi-name">${item.name}</div>
-          <div class="macros-inline">${item.calories} kcal · <b>${item.protein}g</b> P · ${item.carbs}g C · ${item.fat}g F</div>
-        </div>
-        <div class="mi-actions"><button class="secondary" data-i="${idx}">Remove</button></div>
-      </div>`;
-    row.querySelector('button').addEventListener('click', () => { manualPlanItems.splice(idx, 1); renderManualPlan(); });
-    list.appendChild(row);
-  });
-}
-
-/* ---------- Nutrition chatbot ---------- */
-const dishCache = {
-  "ful medames|foul mdammas|ful mdammas|foul medames": "Ful medames (also spelled foul mdammas) is a breakfast dish of slow-cooked fava beans, mashed lightly and dressed with olive oil, lemon juice, and garlic. It's typically topped with chopped tomato, parsley, and a sprinkle of cumin, served warm with pita bread.",
-  "hummus": "Hummus is a dip made from cooked chickpeas blended with tahini, lemon juice, garlic, and olive oil until smooth. Usually served drizzled with more olive oil, sometimes with whole chickpeas or paprika on top.",
-  "fattoush": "Fattoush is a mixed salad of chopped tomatoes, cucumbers, radishes, lettuce, and mint, tossed with fried or toasted pita pieces, dressed with olive oil, lemon juice, and sumac.",
-  "tabbouleh|tabouli": "Tabbouleh is a parsley-based salad — mostly finely chopped parsley with a smaller amount of bulgur, tomato, mint, onion, lemon juice, and olive oil.",
-  "kibbeh": "Kibbeh is finely ground meat mixed with bulgur wheat and spices — served raw (kibbeh nayyeh), baked in a tray (kibbeh bil sayniyeh), or fried into stuffed shells (kibbeh mekliyeh).",
-  "manakish|manoushe|man'ouche": "Manakish is a flatbread topped with either zaatar mixed with olive oil, or cheese, baked until the edges are crisp — often eaten folded for breakfast.",
-  "mujaddara|mjadra": "Mujaddara is lentils and rice (or bulgur) cooked together, topped with deeply caramelized fried onions — a simple, filling vegetarian staple.",
-  "shish taouk|shish tawook": "Shish taouk is skewered grilled chicken marinated in yogurt, garlic, lemon juice, and spices, usually served with garlic sauce, pickles, and pita or rice.",
-  "kafta|kofta": "Kafta is ground meat mixed with parsley, onion, and spices, shaped into logs or patties and grilled or baked.",
-  "freekeh": "Freekeh is young green wheat that's been roasted and cracked, giving it a smoky flavor — used like rice or bulgur.",
-  "labneh": "Labneh is strained yogurt with a thick, cream-cheese-like texture, eaten as a dip or spread, usually drizzled with olive oil.",
-  "toum": "Toum is a garlic sauce made by emulsifying garlic, oil, lemon juice, and salt into a thick, fluffy paste — no egg involved, very pungent.",
-  "shawarma": "Shawarma is meat slow-roasted on a vertical rotating spit, shaved into thin slices, and wrapped in pita with garlic sauce or tahini and pickles.",
-  "sambousek|sambusak": "Sambousek are small folded pastries filled with spiced meat or cheese, baked or fried until golden.",
-  "warak enab|waraq enab|stuffed grape leaves": "Warak enab is grape leaves rolled around rice, sometimes with meat and herbs, then simmered until tender.",
-  "baba ghanouj|baba ganoush|mutabbal": "Baba ghanouj is roasted, mashed eggplant mixed with tahini, garlic, lemon juice, and olive oil — the eggplant is charred first for a smoky flavor.",
-  "knafeh|kunafa": "Knafeh is shredded phyllo or semolina layered over soft cheese, baked, then soaked in sugar-rosewater syrup and topped with crushed pistachios."
-};
-function checkCache(question) {
-  const q = question.toLowerCase();
-  for (const key in dishCache) {
-    if (key.split('|').some(v => q.includes(v))) return dishCache[key];
-  }
-  return null;
-}
-const chatHistory = [];
-function addBubble(text, who) {
-  const win = document.getElementById('chatWindow');
-  const div = document.createElement('div');
-  div.className = 'bubble ' + who;
-  div.textContent = text;
-  win.appendChild(div);
-  win.scrollTop = win.scrollHeight;
-  return div;
-}
-function addTypingBubble() {
-  const win = document.getElementById('chatWindow');
-  const div = document.createElement('div');
-  div.className = 'bubble bot';
-  div.innerHTML = '<span class="typing-dots"><span></span><span></span><span></span></span>';
-  win.appendChild(div);
-  win.scrollTop = win.scrollHeight;
-  return div;
-}
-const chatTextarea = document.getElementById('chatInput');
-chatTextarea.addEventListener('input', () => {
-  chatTextarea.style.height = 'auto';
-  chatTextarea.style.height = Math.min(chatTextarea.scrollHeight, 120) + 'px';
-});
-async function sendChat() {
-  const text = chatTextarea.value.trim();
-  if (!text) return;
-  chatTextarea.value = '';
-  chatTextarea.style.height = 'auto';
-  addBubble(text, 'user');
-
-  const cached = checkCache(text);
-  if (cached) { addBubble(cached, 'bot'); return; }
-
-  chatHistory.push({ role: 'user', content: text });
-  const thinking = addTypingBubble();
-  try {
-    const response = await fetch('/.netlify/functions/groq-chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_tokens: 700,
-        messages: [
-          { role: 'system', content: 'You are a nutrition and cooking assistant focused only on food, dishes, ingredients, nutrition, and cooking instructions, with an emphasis on Lebanese and Levantine cuisine. Explain unfamiliar dishes clearly, and give detailed step-by-step recipes with quantities and timing when asked how to cook something. If asked about something unrelated to food, nutrition, or cooking, politely redirect back to food topics.' + (userProfile.allergies ? ` The user is allergic to: ${userProfile.allergies} — never suggest these.` : '') + (userProfile.dislikes ? ` The user dislikes: ${userProfile.dislikes} — avoid suggesting these where possible.` : '') },
-          ...chatHistory
-        ]
-      })
-    });
-    const data = await response.json();
-    const reply = data.choices && data.choices[0] ? data.choices[0].message.content : (data.error ? `Groq error: ${typeof data.error === 'string' ? data.error : data.error.message}` : 'Sorry, something went wrong.');
-    thinking.textContent = reply;
-    chatHistory.push({ role: 'assistant', content: reply });
-  } catch (err) {
-    thinking.textContent = 'Error: ' + err.message;
-  }
-}
-document.getElementById('chatSend').addEventListener('click', sendChat);
-chatTextarea.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } });
-
-/* ---------- Daily log ---------- */
-let logItems = [];
-let logIdCounter = 0;
-function renderLog() {
-  saveLogToFirestore();
-  const totals = logItems.reduce((s, i) => ({
-    calories: s.calories + i.calories, protein: s.protein + i.protein, carbs: s.carbs + i.carbs, fat: s.fat + i.fat
-  }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
-
-  document.getElementById('sumKcal').textContent = totals.calories;
-  document.getElementById('sumKcalLbl').textContent = `of ${dailyTargets.calories} kcal`;
-  document.getElementById('sumP').textContent = totals.protein + 'g';
-  document.getElementById('sumC').textContent = totals.carbs + 'g';
-  document.getElementById('sumF').textContent = totals.fat + 'g';
-  document.getElementById('fillKcal').style.width = Math.min(100, Math.round(totals.calories / dailyTargets.calories * 100)) + '%';
-  document.getElementById('fillP').style.width = Math.min(100, Math.round(totals.protein / dailyTargets.protein * 100)) + '%';
-  document.getElementById('fillC').style.width = Math.min(100, Math.round(totals.carbs / dailyTargets.carbs * 100)) + '%';
-  document.getElementById('fillF').style.width = Math.min(100, Math.round(totals.fat / dailyTargets.fat * 100)) + '%';
-
-  const list = document.getElementById('logList');
-  if (logItems.length === 0) { list.innerHTML = '<div class="meta">Nothing logged yet — scan or add something.</div>'; return; }
-  list.innerHTML = '';
-  logItems.forEach((item, idx) => {
-    const row = document.createElement('div');
-    row.className = 'log-item';
-    row.innerHTML = `
-      <div>
-        <div class="n">${item.name}</div>
-        <div class="macros-inline">${item.calories} kcal · <b>${item.protein}g</b> P · ${item.carbs}g C · ${item.fat}g F</div>
-      </div>
-      <div class="mi-actions">
-        <button class="secondary small" data-act="edit">Edit</button>
-        <button class="secondary small" data-act="remove">Remove</button>
-      </div>`;
-    row.querySelector('[data-act="remove"]').addEventListener('click', () => { logItems.splice(idx, 1); renderLog(); });
-    row.querySelector('[data-act="edit"]').addEventListener('click', () => openLogEdit(row, item, idx));
-    list.appendChild(row);
-  });
-}
-function openLogEdit(row, item, idx) {
-  const existing = row.querySelector('.edit-form');
-  if (existing) { existing.remove(); return; }
-  const form = document.createElement('div');
-  form.className = 'edit-form open';
-  form.innerHTML = `
-    <label>Name</label><input class="e-name" value="${item.name}">
-    <div class="macro-input-grid" style="margin-top:8px">
-      <div><label>Kcal</label><input class="e-cal" value="${item.calories}"></div>
-      <div><label>Protein</label><input class="e-p" value="${item.protein}"></div>
-      <div><label>Carbs</label><input class="e-c" value="${item.carbs}"></div>
-      <div><label>Fat</label><input class="e-f" value="${item.fat}"></div>
-    </div>
-    <button class="small" style="margin-top:10px;width:100%">Save changes</button>`;
-  form.querySelector('button').addEventListener('click', () => {
-    logItems[idx] = {
-      name: form.querySelector('.e-name').value || item.name,
-      calories: parseFloat(form.querySelector('.e-cal').value) || 0,
-      protein: parseFloat(form.querySelector('.e-p').value) || 0,
-      carbs: parseFloat(form.querySelector('.e-c').value) || 0,
-      fat: parseFloat(form.querySelector('.e-f').value) || 0
-    };
-    renderLog();
-  });
-  row.appendChild(form);
-}
-document.getElementById('clearLog').addEventListener('click', () => { logItems = []; renderLog(); });
-document.getElementById('manualAdd').addEventListener('click', () => {
-  const name = document.getElementById('manualName').value.trim();
-  const calories = parseFloat(document.getElementById('manualCals').value) || 0;
-  const protein = parseFloat(document.getElementById('manualProtein').value) || 0;
-  const carbs = parseFloat(document.getElementById('manualCarbs').value) || 0;
-  const fat = parseFloat(document.getElementById('manualFat').value) || 0;
-  if (!name) return;
-  logItems.push({ name, calories, protein, carbs, fat });
-  ['manualName','manualCals','manualProtein','manualCarbs','manualFat'].forEach(id => document.getElementById(id).value = '');
-  renderLog();
-});
-
-/* ---------- Barcode scanner ---------- */
-let scanner = null;
-document.getElementById('scanStart').addEventListener('click', () => {
-  document.getElementById('reader').style.display = 'block';
-  document.getElementById('scanStart').style.display = 'none';
-  document.getElementById('scanStop').style.display = 'block';
-  scanner = new Html5Qrcode('reader');
-  scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: 220 }, onScanSuccess, () => {})
-    .catch(err => { document.getElementById('scanResult').innerHTML = `<div class="meta">Couldn't access the camera: ${err}</div>`; });
-});
-document.getElementById('scanStop').addEventListener('click', stopScanner);
-function stopScanner() {
-  if (scanner) { scanner.stop().then(() => scanner.clear()).catch(() => {}); }
-  document.getElementById('reader').style.display = 'none';
-  document.getElementById('scanStart').style.display = 'block';
-  document.getElementById('scanStop').style.display = 'none';
-}
-async function onScanSuccess(barcode) {
-  stopScanner();
-  const resultBox = document.getElementById('scanResult');
-  resultBox.innerHTML = '<div class="meta">Looking up ' + barcode + '...</div>';
-  try {
-    const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`);
-    const data = await res.json();
-    if (data.status !== 1) { resultBox.innerHTML = `<div class="meta">No product found for ${barcode}. Try adding it manually below.</div>`; return; }
-    const p = data.product;
-    const name = p.product_name || p.generic_name || 'Unknown product';
-    const n = p.nutriments || {};
-    const per100 = {
-      calories: n['energy-kcal_100g'] ? Math.round(n['energy-kcal_100g']) : 0,
-      protein: n['proteins_100g'] ? Math.round(n['proteins_100g']) : 0,
-      carbs: n['carbohydrates_100g'] ? Math.round(n['carbohydrates_100g']) : 0,
-      fat: n['fat_100g'] ? Math.round(n['fat_100g']) : 0
-    };
-    const img = p.image_front_small_url || '';
-    resultBox.innerHTML = `
-      <div class="product-card">
-        ${img ? `<img src="${img}">` : ''}
-        <div class="product-info">
-          <div class="name">${name}</div>
-          <div class="cals">${per100.calories} kcal / 100g</div>
-        </div>
-      </div>
-      <div class="row" style="margin-top:12px"><div style="flex:1"><label>Grams eaten</label><input id="scanGrams" value="100"></div></div>
-      <button id="scanAddBtn" type="button">Add to today's log</button>`;
-    document.getElementById('scanAddBtn').addEventListener('click', () => {
-      const grams = parseFloat(document.getElementById('scanGrams').value) || 100;
-      const factor = grams / 100;
-      logItems.push({
-        name: `${name} (${grams}g)`,
-        calories: Math.round(per100.calories * factor),
-        protein: Math.round(per100.protein * factor),
-        carbs: Math.round(per100.carbs * factor),
-        fat: Math.round(per100.fat * factor)
-      });
-      renderLog();
-      resultBox.innerHTML = "<div class=\"meta\">Added to today's log.</div>";
-    });
-  } catch (err) {
-    resultBox.innerHTML = `<div class="meta">Lookup failed: ${err.message}</div>`;
-  }
-}
-
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
-}
-</script>
+<script type="module" src="app.js"></script>
