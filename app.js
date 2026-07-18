@@ -784,6 +784,10 @@ const dishCache = {
 };
 function checkCache(question) {
   const q = question.toLowerCase();
+  // Recipe/how-to requests always need a real, detailed AI answer — never serve
+  // the short cached definition just because a dish name appears in the question.
+  const wantsRecipe = /\b(how|make|cook|recipe|step|prepare|instructions)\b/.test(q);
+  if (wantsRecipe) return null;
   for (const key in dishCache) {
     if (key.split('|').some(v => q.includes(v))) return dishCache[key];
   }
