@@ -73,6 +73,13 @@ async function loadUsageForProfile() {
   } catch (err) { return { plan: 0, chat: 0 }; }
 }
 
+async function loadGlobalUsage() {
+  try {
+    const snap = await getDoc(doc(db, 'appUsage', todayKey()));
+    return snap.exists() ? { plan: snap.data().plan || 0, chat: snap.data().chat || 0 } : { plan: 0, chat: 0 };
+  } catch (err) { return { plan: 0, chat: 0 }; }
+}
+
 
 /* API calls now go through /netlify/functions/* proxies — no keys live in this file anymore.
    Set GROQ_API_KEY and GEMINI_API_KEY as environment variables in your Netlify site settings. */
@@ -156,6 +163,11 @@ async function loadUserData(uid) {
       logItems = logSnap.data().items || [];
       renderLog();
     }
+    const chatSnap = await getDoc(doc(db, 'users', uid, 'chatHistory', 'main'));
+    if (chatSnap.exists()) {
+      chatHistory = chatSnap.data().messages || [];
+      renderRestoredChat();
+    }
   } catch (err) { console.error('Failed to load user data:', err); }
 }
 
@@ -193,6 +205,9 @@ document.getElementById('userPill').addEventListener('click', async () => {
   const usage = await loadUsageForProfile();
   document.getElementById('profileUsagePlan').textContent = usage.plan;
   document.getElementById('profileUsageChat').textContent = usage.chat;
+  const globalUsage = await loadGlobalUsage();
+  document.getElementById('fillUsagePlan').style.width = Math.min(100, Math.round(globalUsage.plan / USAGE_LIMITS.plan * 100)) + '%';
+  document.getElementById('fillUsageChat').style.width = Math.min(100, Math.round(globalUsage.chat / USAGE_LIMITS.chat * 100)) + '%';
 });
 document.getElementById('profileClose').addEventListener('click', () => document.getElementById('profileModal').classList.remove('open'));
 document.getElementById('profileModal').addEventListener('click', (e) => { if (e.target.id === 'profileModal') e.currentTarget.classList.remove('open'); });
@@ -396,13 +411,20 @@ document.getElementById('obNext').addEventListener('click', () => {
 
 
 /* ---------- Tab switching ---------- */
-document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
-  if (btn.dataset.tab === 'track') renderLog();
-}));
+  document.getElementById('panel-' + tab).classList.add('active');
+  if (tab === 'track') renderLog();
+}
+document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
+
+function askHowToMake(dishName) {
+  switchTab('chat');
+  const question = `How do I make ${dishName} step by step?`;
+  document.getElementById('chatInput').value = question;
+  sendChat();
+}
 
 /* ---------- Plan branch toggle ---------- */
 document.getElementById('branchAI').addEventListener('click', () => {
@@ -668,12 +690,16 @@ function renderMealPlan(plan, container) {
       <div class="m-desc">${m.description || ''}</div>
       <div class="macro-chips">
         <span class="macro-chip kcal">${m.calories} kcal</span>
-        <span class="macro-chip p">${m.protein}g P</span>
-        <span class="macro-chip c">${m.carbs}g C</span>
-        <span class="macro-chip f">${m.fat}g F</span>
+        <span class="macro-chip p">${m.protein}g protein</span>
+        <span class="macro-chip c">${m.carbs}g carbs</span>
+        <span class="macro-chip f">${m.fat}g fat</span>
       </div>
-      <button class="secondary small" data-logged="false" style="margin-top:10px;width:100%">Mark as eaten</button>`;
-    const logBtn = card.querySelector('button');
+      <div class="row" style="margin-top:10px;gap:8px">
+        <button class="secondary small how-to-make" style="flex:1">How to make it</button>
+        <button class="small" data-logged="false" style="flex:1">Mark as eaten</button>
+      </div>`;
+    card.querySelector('.how-to-make').addEventListener('click', () => askHowToMake(m.name));
+    const logBtn = card.querySelector('[data-logged]');
     let loggedId = null;
     logBtn.addEventListener('click', () => {
       const logged = logBtn.dataset.logged === 'true';
@@ -763,7 +789,18 @@ function checkCache(question) {
   }
   return null;
 }
-const chatHistory = [];
+let chatHistory = [];
+async function saveChatToFirestore() {
+  if (!currentUser || !currentUser.uid) return;
+  try {
+    await setDoc(doc(db, 'users', currentUser.uid, 'chatHistory', 'main'), { messages: chatHistory });
+  } catch (err) { console.error('Failed to save chat history:', err); }
+}
+function renderRestoredChat() {
+  const win = document.getElementById('chatWindow');
+  win.innerHTML = '<div class="bubble bot">Ahla! Ask me about any Lebanese dish, ingredient, or how to cook something step by step.</div>';
+  chatHistory.forEach(m => addBubble(m.content, m.role === 'user' ? 'user' : 'bot'));
+}
 function addBubble(text, who) {
   const win = document.getElementById('chatWindow');
   const div = document.createElement('div');
@@ -795,7 +832,12 @@ async function sendChat() {
   addBubble(text, 'user');
 
   const cached = checkCache(text);
-  if (cached) { addBubble(cached, 'bot'); return; }
+  if (cached) {
+    addBubble(cached, 'bot');
+    chatHistory.push({ role: 'user', content: text }, { role: 'assistant', content: cached });
+    saveChatToFirestore();
+    return;
+  }
 
   chatHistory.push({ role: 'user', content: text });
   const thinking = addTypingBubble();
@@ -816,6 +858,7 @@ async function sendChat() {
     const reply = data.choices && data.choices[0] ? data.choices[0].message.content : (data.error ? `Groq error: ${typeof data.error === 'string' ? data.error : data.error.message}` : 'Sorry, something went wrong.');
     thinking.textContent = reply;
     chatHistory.push({ role: 'assistant', content: reply });
+    saveChatToFirestore();
     if (data.choices && data.choices[0]) trackUsage('chat');
   } catch (err) {
     thinking.textContent = 'Error: ' + err.message;

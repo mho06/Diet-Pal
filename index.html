@@ -353,8 +353,14 @@
         <div class="profile-row"><span>Goal</span><b id="profileGoal">Maintain</b></div>
         <div class="profile-row"><span>Daily calorie target</span><b id="profileCalTarget">2000 kcal</b></div>
         <div class="profile-row"><span>Protein / Carbs / Fat</span><b id="profileMacros">120g / 220g / 65g</b></div>
-        <div class="profile-row"><span>AI plans generated today</span><b id="profileUsagePlan">0</b></div>
-        <div class="profile-row"><span>Chat messages today</span><b id="profileUsageChat">0</b></div>
+        <div class="profile-row" style="flex-direction:column;align-items:stretch">
+          <div style="display:flex;justify-content:space-between"><span>AI plans generated today</span><b id="profileUsagePlan">0</b></div>
+          <div class="mini-track" style="margin-top:6px"><div class="mini-fill" id="fillUsagePlan" style="width:0%;background:var(--accent)"></div></div>
+        </div>
+        <div class="profile-row" style="flex-direction:column;align-items:stretch">
+          <div style="display:flex;justify-content:space-between"><span>Chat messages today</span><b id="profileUsageChat">0</b></div>
+          <div class="mini-track" style="margin-top:6px"><div class="mini-fill" id="fillUsageChat" style="width:0%;background:var(--green)"></div></div>
+        </div>
         <button id="profileEditBtn" type="button" style="margin-top:16px">Edit my info</button>
         <button class="secondary" id="profileClose" type="button" style="margin-top:10px">Close</button>
         <button class="ghost" id="profileLogout" type="button" style="display:block;margin:14px auto 0">Log out</button>
