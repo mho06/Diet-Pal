@@ -18,14 +18,21 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Network-first for API calls (our own AI proxy, Open Food Facts, Firebase) so data stays live.
-  // Cache-first for the app shell so it loads instantly and works offline.
   const url = event.request.url;
+  // Never cache API calls (our AI proxy, Open Food Facts, Firebase) — always live.
   if (url.includes('/.netlify/functions/') || url.includes('openfoodfacts.org') || url.includes('googleapis.com') || url.includes('gstatic.com')) {
     return;
   }
+  // Network-first for the app shell: always try to get the latest deploy first.
+  // Only fall back to the cached copy if the network is unavailable (offline).
   event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
+    fetch(event.request)
+      .then((response) => {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
 

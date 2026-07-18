@@ -8,7 +8,7 @@ import {
   signOut, onAuthStateChanged, updateProfile, deleteUser
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
-  getFirestore, doc, setDoc, getDoc, deleteDoc
+  getFirestore, doc, setDoc, getDoc, deleteDoc, increment
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -23,6 +23,56 @@ const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
 const db = getFirestore(fbApp);
 function todayKey() { return new Date().toISOString().slice(0, 10); }
+
+/* ---------- AI usage tracking ---------- */
+// Soft daily limits based on the free-tier caps for the shared keys powering the app.
+const USAGE_LIMITS = { plan: 1500, chat: 14400 };
+let usageCache = { plan: 0, chat: 0 };
+
+async function trackUsage(type) {
+  if (!currentUser || !currentUser.uid) return;
+  const date = todayKey();
+  try {
+    await setDoc(doc(db, 'users', currentUser.uid, 'usage', date), { [type]: increment(1) }, { merge: true });
+    await setDoc(doc(db, 'appUsage', date), { [type]: increment(1) }, { merge: true });
+  } catch (err) { console.error('Usage tracking failed:', err); }
+  checkUsageWarning(type);
+}
+
+async function checkUsageWarning(type) {
+  try {
+    const snap = await getDoc(doc(db, 'appUsage', todayKey()));
+    const count = snap.exists() ? (snap.data()[type] || 0) : 0;
+    const limit = USAGE_LIMITS[type];
+    if (count / limit >= 0.9) {
+      showUsageWarning(type);
+    }
+  } catch (err) { /* silent — this is a nice-to-have, not critical */ }
+}
+
+function showUsageWarning(type) {
+  const label = type === 'plan' ? 'AI meal planning' : 'AI chat';
+  const targetId = type === 'plan' ? 'status' : null;
+  const banner = document.createElement('div');
+  banner.className = 'usage-banner';
+  banner.textContent = `Heads up — ${label} is close to today's shared limit and may slow down or pause. It resets at midnight UTC.`;
+  if (type === 'plan') {
+    const status = document.getElementById('status');
+    if (status && !document.querySelector('.usage-banner')) status.parentElement.insertBefore(banner, status);
+  } else {
+    const win = document.getElementById('chatWindow');
+    if (win && !document.querySelector('.usage-banner')) win.parentElement.insertBefore(banner, win);
+  }
+}
+
+async function loadUsageForProfile() {
+  if (!currentUser || !currentUser.uid) return { plan: 0, chat: 0 };
+  try {
+    const snap = await getDoc(doc(db, 'users', currentUser.uid, 'usage', todayKey()));
+    return snap.exists() ? { plan: snap.data().plan || 0, chat: snap.data().chat || 0 } : { plan: 0, chat: 0 };
+  } catch (err) { return { plan: 0, chat: 0 }; }
+}
+
 
 /* API calls now go through /netlify/functions/* proxies — no keys live in this file anymore.
    Set GROQ_API_KEY and GEMINI_API_KEY as environment variables in your Netlify site settings. */
@@ -129,7 +179,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-document.getElementById('userPill').addEventListener('click', () => {
+document.getElementById('userPill').addEventListener('click', async () => {
   showProfileView();
   document.getElementById('profileAvatarLg').textContent = currentUser.name.charAt(0).toUpperCase();
   document.getElementById('profileName').textContent = currentUser.name;
@@ -137,7 +187,12 @@ document.getElementById('userPill').addEventListener('click', () => {
   document.getElementById('profileGoal').textContent = selectedGoal.charAt(0).toUpperCase() + selectedGoal.slice(1);
   document.getElementById('profileCalTarget').textContent = `${dailyTargets.calories} kcal`;
   document.getElementById('profileMacros').textContent = `${dailyTargets.protein}g / ${dailyTargets.carbs}g / ${dailyTargets.fat}g`;
+  document.getElementById('profileUsagePlan').textContent = '…';
+  document.getElementById('profileUsageChat').textContent = '…';
   document.getElementById('profileModal').classList.add('open');
+  const usage = await loadUsageForProfile();
+  document.getElementById('profileUsagePlan').textContent = usage.plan;
+  document.getElementById('profileUsageChat').textContent = usage.chat;
 });
 document.getElementById('profileClose').addEventListener('click', () => document.getElementById('profileModal').classList.remove('open'));
 document.getElementById('profileModal').addEventListener('click', (e) => { if (e.target.id === 'profileModal') e.currentTarget.classList.remove('open'); });
@@ -552,7 +607,7 @@ ${goalInstructions[selectedGoal]}
 ${restrictions.join(' ')}
 Use real Lebanese/Levantine dishes. Keep descriptions to one short sentence. Numbers must be realistic and the totals must be the sum of the meals.`;
 
-  try {
+  async function callGemini() {
     const response = await fetch('/.netlify/functions/gemini-plan', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -565,11 +620,32 @@ Use real Lebanese/Levantine dishes. Keep descriptions to one short sentence. Num
     const data = await response.json();
     if (data.error) throw new Error(typeof data.error === 'string' ? data.error : data.error.message);
     const raw = data.candidates[0].content.parts.map(p => p.text).join('');
-    const plan = JSON.parse(raw);
+    return JSON.parse(raw);
+  }
+
+  try {
+    let plan;
+    try {
+      plan = await callGemini();
+    } catch (err) {
+      // Free-tier models occasionally return a transient "overloaded" error — one quiet retry
+      // after a short pause resolves this most of the time, so don't bother the user with it.
+      if (/overload|high demand|unavailable|503/i.test(err.message)) {
+        status.innerHTML = '<span class="typing-dots"><span></span><span></span><span></span></span> High demand, retrying...';
+        await new Promise(r => setTimeout(r, 1500));
+        plan = await callGemini();
+      } else {
+        throw err;
+      }
+    }
     renderMealPlan(plan, output);
     status.textContent = usePantry ? 'Built from your pantry' : 'Built for your target';
+    trackUsage('plan');
   } catch (err) {
-    output.innerHTML = `<div class="meta">Something went wrong generating the plan: ${err.message}</div>`;
+    const friendly = /overload|high demand|unavailable|503/i.test(err.message)
+      ? "The AI is under heavy load right now. This is temporary — wait a moment and try again."
+      : `Something went wrong generating the plan: ${err.message}`;
+    output.innerHTML = `<div class="meta">${friendly}</div>`;
     status.textContent = '';
   }
   btn.disabled = false;
@@ -731,7 +807,7 @@ async function sendChat() {
         model: 'llama-3.3-70b-versatile',
         max_tokens: 700,
         messages: [
-          { role: 'system', content: 'You are a nutrition and cooking assistant focused only on food, dishes, ingredients, nutrition, and cooking instructions, with an emphasis on Lebanese and Levantine cuisine. Explain unfamiliar dishes clearly, and give detailed step-by-step recipes with quantities and timing when asked how to cook something. If asked about something unrelated to food, nutrition, or cooking, politely redirect back to food topics.' + (userProfile.allergies ? ` The user is allergic to: ${userProfile.allergies} — never suggest these.` : '') + (userProfile.dislikes ? ` The user dislikes: ${userProfile.dislikes} — avoid suggesting these where possible.` : '') },
+          { role: 'system', content: 'You are a nutrition and cooking assistant focused only on food, dishes, ingredients, nutrition, and cooking instructions, with an emphasis on Lebanese and Levantine cuisine. Default to short, direct answers — a sentence or two, just the fact or number asked for, no walkthrough of your reasoning and no unrequested extra context. Only give a longer, detailed explanation, breakdown, or step-by-step recipe when the user explicitly asks for one (e.g. "explain", "how do I make", "step by step", "why"). If asked about something unrelated to food, nutrition, or cooking, politely redirect back to food topics in one short sentence.' + (userProfile.allergies ? ` The user is allergic to: ${userProfile.allergies} — never suggest these.` : '') + (userProfile.dislikes ? ` The user dislikes: ${userProfile.dislikes} — avoid suggesting these where possible.` : '') },
           ...chatHistory
         ]
       })
@@ -740,6 +816,7 @@ async function sendChat() {
     const reply = data.choices && data.choices[0] ? data.choices[0].message.content : (data.error ? `Groq error: ${typeof data.error === 'string' ? data.error : data.error.message}` : 'Sorry, something went wrong.');
     thinking.textContent = reply;
     chatHistory.push({ role: 'assistant', content: reply });
+    if (data.choices && data.choices[0]) trackUsage('chat');
   } catch (err) {
     thinking.textContent = 'Error: ' + err.message;
   }

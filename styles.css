@@ -33,7 +33,9 @@ html { scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
 ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--ink-soft); }
 
-body { font-family: 'Inter', sans-serif; margin: 0; color: var(--ink); background: var(--bg); }
+body { font-family: 'Inter', sans-serif; margin: 0; color: var(--ink); background: var(--bg); user-select: none; -webkit-user-select: none; }
+input, textarea { user-select: text; -webkit-user-select: text; }
+.bubble, .meal-card .m-desc, .coach-note { user-select: text; -webkit-user-select: text; }
 h1, h2, h3, .brand { font-family: 'Poppins', sans-serif; }
 
 /* No boxed "app inside a browser" container — content just flows in the page */
@@ -92,6 +94,7 @@ button:not(:disabled):hover { box-shadow: var(--glow); transform: translateY(-1p
 button:not(:disabled):active { transform: scale(0.97); box-shadow: none; }
 
 .meta { font-size: 12px; color: var(--ink-soft); margin-top: 6px; }
+.usage-banner { background: #FFF4E0; border: 1px solid #F0CE8A; color: #8A6212; font-size: 12.5px; line-height: 1.5; border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; }
 
 /* ---------- Branch choice cards ---------- */
 .branch-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
