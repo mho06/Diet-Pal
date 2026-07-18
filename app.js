@@ -1,3 +1,4 @@
+
 /* Firebase — real accounts and persistent storage.
    Config below is safe to expose client-side; Firebase security
    is enforced through Firestore rules, not by hiding this object. */
@@ -113,7 +114,6 @@ function enterApp(user) {
   document.getElementById('loadingGate').style.display = 'none';
   document.getElementById('authGate').style.display = 'none';
   document.getElementById('appRoot').classList.remove('app-hidden');
-  document.getElementById('userNameLabel').textContent = user.name;
   document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
 }
 

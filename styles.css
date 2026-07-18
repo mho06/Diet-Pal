@@ -49,9 +49,9 @@ h1, h2, h3, .brand { font-family: 'Poppins', sans-serif; }
 .topbar-row { display: flex; align-items: center; justify-content: space-between; max-width: 720px; margin: 0 auto; }
 .topbar h1.brand { font-weight: 700; font-size: 26px; margin: 0; letter-spacing: -0.3px; color: var(--ink); }
 .topbar .sub { font-size: 13.5px; color: var(--ink-soft); margin-top: 4px; }
-.user-pill { display: flex; align-items: center; gap: 8px; background: var(--card); border: 1px solid var(--line); border-radius: 100px; padding: 6px 14px 6px 6px; font-size: 13px; font-weight: 600; width: auto; color: var(--ink); cursor: pointer; box-shadow: var(--shadow); transition: border-color 0.2s ease, transform 0.15s ease; }
+.user-pill { display: flex; align-items: center; justify-content: center; background: var(--card); border: 1px solid var(--line); border-radius: 50%; width: 42px; height: 42px; padding: 0; flex-shrink: 0; cursor: pointer; box-shadow: var(--shadow); transition: border-color 0.2s ease, transform 0.15s ease; }
 .user-pill:hover { border-color: var(--accent); transform: translateY(-1px); }
-.user-pill:active { transform: scale(0.97); }
+.user-pill:active { transform: scale(0.94); }
 .user-avatar { width: 26px; height: 26px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--gold)); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; }
 
 .content { max-width: 720px; margin: 0 auto; }
@@ -157,9 +157,9 @@ button:not(:disabled):active { transform: scale(0.97); box-shadow: none; }
 .bubble { max-width: 88%; padding: 13px 16px; border-radius: 18px; font-size: 15px; line-height: 1.6; white-space: pre-wrap; animation: bubbleIn 0.3s var(--ease) both; }
 .bubble.user { align-self: flex-end; background: var(--accent); color: #fff; border-bottom-right-radius: 4px; font-weight: 500; }
 .bubble.bot { align-self: flex-start; background: var(--card-soft); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
-.chat-input-row { display: flex; gap: 8px; margin-top: 12px; align-items: flex-end; }
-.chat-input-row textarea { flex: 1; resize: none; min-height: 48px; max-height: 120px; }
-.chat-input-row button { width: auto; padding: 13px 20px; }
+.chat-input-row { display: flex; gap: 8px; margin-top: 14px; align-items: flex-end; position: sticky; bottom: 12px; }
+.chat-input-row textarea { flex: 1; resize: none; min-height: 48px; max-height: 120px; background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow); border-radius: 24px; padding: 13px 18px; }
+.chat-input-row button { width: auto; padding: 13px 22px; border-radius: 24px; }
 .typing-dots { display: inline-flex; gap: 4px; padding: 4px 0; }
 .typing-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: dotBounce 1.2s infinite ease-in-out; }
 .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
@@ -234,7 +234,7 @@ button:not(:disabled):active { transform: scale(0.97); box-shadow: none; }
 .password-field input { padding-right: 46px; }
 .eye-toggle { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; background: transparent !important; border: none; border-radius: 8px; padding: 0; display: flex; align-items: center; justify-content: center; box-shadow: none; }
 .eye-toggle svg { width: 19px; height: 19px; stroke: var(--ink-soft); fill: none; stroke-width: 1.8; }
-.eye-toggle:hover, .eye-toggle:active { background: transparent !important; box-shadow: none; transform: translateY(-50%); }
+.eye-toggle:hover, .eye-toggle:active, button.eye-toggle:hover, button.eye-toggle:active { background: transparent !important; box-shadow: none !important; transform: translateY(-50%) !important; }
 
 .onboard-progress { display: flex; justify-content: center; gap: 8px; margin-bottom: 26px; flex-shrink: 0; }
 .onboard-progress .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); transition: background 0.25s ease, transform 0.25s ease; }
